@@ -18,7 +18,7 @@ public class JsonWindowOpenAction extends AnAction {
         if(project == null ){
             return ;
         }
-        final ToolWindow toolWindow= ToolWindowManager.getInstance(project).getToolWindow("JSON Formatter");
+        final ToolWindow toolWindow= ToolWindowManager.getInstance(project).getToolWindow("JsonParse");
         toolWindow.show();
     }
 }
