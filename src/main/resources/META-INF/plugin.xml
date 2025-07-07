@@ -21,7 +21,7 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="JSON Formatter" anchor="right"
+        <toolWindow id="JsonParse" anchor="right"
                     factoryClass="ink.ican.jsonparse.ui.JsonFormatHtmlWindowFactory"
                     icon="/META-INF/json.svg"/>
     </extensions>
