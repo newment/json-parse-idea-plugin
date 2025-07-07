@@ -10,6 +10,7 @@ import com.intellij.ui.jcef.JBCefClient;
 import org.cef.CefClient;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -37,12 +38,10 @@ public class JsonFormatHtmlWindowFactory implements ToolWindowFactory {
                 } catch (IOException e) {
                     browser.loadHTML("<h1>Error reading file: " + e.getMessage() + "</h1>");
                 }
-
             }
             else {
                 browser.loadHTML("<h1>HTML file not found!</h1>");
             }
-
 
             toolWindow.getComponent().add(browser.getComponent());
         }
