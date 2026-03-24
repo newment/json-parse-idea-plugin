@@ -1,11 +1,10 @@
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.1.0"
-    id("org.jetbrains.intellij.platform") version "2.5.0"
+    id("org.jetbrains.intellij.platform") version "2.6.0"
 }
 
 group = "ink.ican"
-version = "1.0.6-SNAPSHOT"
+version = "1.0.7-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -14,10 +13,8 @@ repositories {
     }
 }
 
-// Configure Gradle IntelliJ Plugin
-// Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
-    implementation("com.google.code.gson:gson:2.13.1")
+    implementation("com.google.code.gson:gson:2.13.2")
     intellijPlatform {
         create("IC", "2025.1")
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
@@ -34,20 +31,14 @@ intellijPlatform {
         }
 
         changeNotes = """
-      Initial version
+      1.修改样式
+      2.完善折叠展开功能
     """.trimIndent()
     }
 }
 
-
-tasks {
-    // Set the JVM compatibility versions
-    withType<JavaCompile> {
-        sourceCompatibility = "21"
-        targetCompatibility = "21"
-    }
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "21"
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
-
