@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字对比</title>
+    <link rel="icon" href="assets/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: "Public Sans", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex: 1;
+            overflow: hidden;
+            min-height: 200px;
+        }
+
+        @media (max-width: 968px) {
+            .panel-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-left {
+            border-right: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 968px) {
+            .panel-left {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .panel-title::before {
+            content: '';
+            width: 4px;
+            height: 14px;
+            background: #667eea;
+            border-radius: 2px;
+        }
+
+        .text-input {
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+            resize: none;
+            transition: border-color 0.3s ease;
+            overflow: auto;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd6;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger {
+            background: #EA5455;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d73a3a;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-clear, .btn-copy {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            z-index: 10;
+        }
+
+        .btn-clear:hover, .btn-copy:hover {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-copy {
+            right: 45px;
+        }
+
+        #outputContainer {
+            flex: 1;
+            overflow: auto;
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            min-width: 0;
+            max-width: 100%;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            box-sizing: border-box;
+        }
+
+        .diff-added {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+            padding: 2px 4px;
+            border-radius: 3px;
+            text-decoration: none;
+        }
+
+        .diff-removed {
+            background-color: #ffcdd2;
+            color: #c62828;
+            padding: 2px 4px;
+            border-radius: 3px;
+            text-decoration: line-through;
+        }
+
+        .diff-modified {
+            background-color: #fff9c4;
+            color: #f57f17;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c00;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-hint {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .success-hint.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 16px;
+            padding: 8px 12px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-added {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .stat-removed {
+            color: #c62828;
+            font-weight: 600;
+        }
+
+        .stat-modified {
+            color: #f57f17;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .options-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .option-label input[type="checkbox"] {
+            cursor: pointer;
+        }
+
+        .stats-summary {
+            display: flex;
+            gap: 20px;
+            padding: 10px 15px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .summary-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .summary-dot.added { background: #4caf50; }
+        .summary-dot.removed { background: #f44336; }
+        .summary-dot.modified { background: #ff9800; }
+        .summary-dot.unchanged { background: #9e9e9e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panel-wrapper">
+            <div class="panel panel-left">
+                <div class="panel-title">原文</div>
+                <button class="btn-clear" onclick="clearText('original')" title="清空">✕</button>
+                <button class="btn-copy" onclick="copyText('original')" title="复制">📋</button>
+                <textarea 
+                    id="originalText" 
+                    class="text-input"
+                    placeholder="请输入原文..."
+                ></textarea>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">对比文本</div>
+                <button class="btn-clear" onclick="clearText('modified')" title="清空">✕</button>
+                <button class="btn-copy" onclick="copyText('modified')" title="复制">📋</button>
+                <textarea 
+                    id="modifiedText" 
+                    class="text-input"
+                    placeholder="请输入对比文本..."
+                ></textarea>
+            </div>
+        </div>
+
+        <div style="padding: 12px; border-top: 1px solid #e0e0e0; flex-shrink: 0;">
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="compareTexts()">
+                    <span>🔍</span> 对比文本
+                </button>
+                <button class="btn btn-secondary" onclick="swapTexts()">
+                    <span>⇄</span> 交换文本
+                </button>
+                <button class="btn btn-danger" onclick="clearAllTexts()">
+                    <span>🗑️</span> 清空全部
+                </button>
+            </div>
+
+            <div class="options-bar">
+                <label class="option-label">
+                    <input type="checkbox" id="ignoreSpaces" checked>
+                    忽略空格差异
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" id="ignoreCase">
+                    忽略大小写
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" id="showLineNumbers" checked>
+                    显示行号
+                </label>
+            </div>
+        </div>
+
+        <div style="padding: 12px; border-top: 1px solid #e0e0e0; flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 150px;">
+            <div class="panel-title" style="justify-content: flex-start;">
+                <span>对比结果</span>
+                <button class="btn-copy" onclick="copyResult()" title="复制结果" style="position: static; margin-left: 8px;">📋</button>
+            </div>
+            <div id="outputContainer" style="flex: 1; overflow: auto;">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>请在上下方输入文本后点击"对比文本"按钮</p>
+                </div>
+            </div>
+            <div id="statsContainer" class="stats-summary" style="display: none; flex-shrink: 0;"></div>
+        </div>
+    </div>
+
+    <script>
+        let originalLines = [];
+        let modifiedLines = [];
+        let diffResult = [];
+        let comparisonStats = { added: 0, removed: 0, modified: 0, unchanged: 0 };
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function normalizeText(text, ignoreSpaces, ignoreCase) {
+            if (ignoreCase) text = text.toLowerCase();
+            if (ignoreSpaces) text = text.replace(/\s+/g, ' ').trim();
+            return text;
+        }
+
+        function computeLCS(a, b) {
+            const m = a.length;
+            const n = b.length;
+            const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+
+            for (let i = 1; i <= m; i++) {
+                for (let j = 1; j <= n; j++) {
+                    if (a[i - 1] === b[j - 1]) {
+                        dp[i][j] = dp[i - 1][j - 1] + 1;
+                    } else {
+                        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                    }
+                }
+            }
+
+            return dp;
+        }
+
+        function getDiff(a, b) {
+            const dp = computeLCS(a, b);
+            const result = [];
+            let i = a.length, j = b.length;
+
+            while (i > 0 || j > 0) {
+                if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
+                    result.unshift({ type: 'unchanged', oldLine: a[i - 1], newLine: b[j - 1] });
+                    i--;
+                    j--;
+                } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+                    result.unshift({ type: 'added', newLine: b[j - 1] });
+                    j--;
+                } else if (i > 0) {
+                    result.unshift({ type: 'removed', oldLine: a[i - 1] });
+                    i--;
+                }
+            }
+
+            return result;
+        }
+
+        function compareTexts() {
+            const originalText = document.getElementById('originalText').value;
+            const modifiedText = document.getElementById('modifiedText').value;
+            const ignoreSpaces = document.getElementById('ignoreSpaces').checked;
+            const ignoreCase = document.getElementById('ignoreCase').checked;
+            const showLineNumbers = document.getElementById('showLineNumbers').checked;
+
+            const outputContainer = document.getElementById('outputContainer');
+            const statsContainer = document.getElementById('statsContainer');
+
+            if (!originalText.trim() && !modifiedText.trim()) {
+                alert('请至少输入一段文本进行对比');
+                return;
+            }
+
+            originalLines = originalText.split('\n');
+            modifiedLines = modifiedText.split('\n');
+
+            const processedOriginal = originalLines.map(line => normalizeText(line, ignoreSpaces, ignoreCase));
+            const processedModified = modifiedLines.map(line => normalizeText(line, ignoreSpaces, ignoreCase));
+
+            diffResult = getDiff(processedOriginal, processedModified);
+
+            comparisonStats = { added: 0, removed: 0, modified: 0, unchanged: 0 };
+
+            let html = '';
+            let oldLineNum = 1;
+            let newLineNum = 1;
+
+            diffResult.forEach((diff, index) => {
+                if (diff.type === 'unchanged') {
+                    comparisonStats.unchanged++;
+                    if (showLineNumbers) {
+                        html += `<span style="color: #999; user-select: none;">${String(oldLineNum).padStart(3, ' ')} | ${String(newLineNum).padStart(3, ' ')} | </span>`;
+                    }
+                    html += escapeHtml(diff.oldLine) + '\n';
+                    oldLineNum++;
+                    newLineNum++;
+                } else if (diff.type === 'removed') {
+                    comparisonStats.removed++;
+                    if (showLineNumbers) {
+                        html += `<span style="color: #999; user-select: none;">${String(oldLineNum).padStart(3, ' ')} |     - | </span>`;
+                    }
+                    html += `<span class="diff-removed">- ${escapeHtml(diff.oldLine)}</span>\n`;
+                    oldLineNum++;
+                } else if (diff.type === 'added') {
+                    comparisonStats.added++;
+                    if (showLineNumbers) {
+                        html += `<span style="color: #999; user-select: none;">     | ${String(newLineNum).padStart(3, ' ')} + | </span>`;
+                    }
+                    html += `<span class="diff-added">+ ${escapeHtml(diff.newLine)}</span>\n`;
+                    newLineNum++;
+                }
+            });
+
+            outputContainer.innerHTML = `<div style="white-space: pre-wrap;">${html || '<span style="color: #999;">两段文本完全相同</span>'}</div>`;
+
+            statsContainer.style.display = 'flex';
+            statsContainer.innerHTML = `
+                <div class="summary-item">
+                    <span class="summary-dot added"></span>
+                    <span>新增: <strong class="stat-added">${comparisonStats.added}</strong> 行</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-dot removed"></span>
+                    <span>删除: <strong class="stat-removed">${comparisonStats.removed}</strong> 行</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-dot unchanged"></span>
+                    <span>未变: <strong>${comparisonStats.unchanged}</strong> 行</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-dot modified"></span>
+                    <span>总行数: <strong>${modifiedLines.length}</strong></span>
+                </div>
+            `;
+        }
+
+        function swapTexts() {
+            const originalText = document.getElementById('originalText').value;
+            const modifiedText = document.getElementById('modifiedText').value;
+            document.getElementById('originalText').value = modifiedText;
+            document.getElementById('modifiedText').value = originalText;
+        }
+
+        function clearText(type) {
+            if (type === 'original') {
+                document.getElementById('originalText').value = '';
+            } else {
+                document.getElementById('modifiedText').value = '';
+            }
+        }
+
+        function clearAllTexts() {
+            document.getElementById('originalText').value = '';
+            document.getElementById('modifiedText').value = '';
+            document.getElementById('outputContainer').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>请在上下方输入文本后点击"对比文本"按钮</p>
+                </div>
+            `;
+            document.getElementById('statsContainer').style.display = 'none';
+        }
+
+        function copyText(type) {
+            const text = type === 'original' 
+                ? document.getElementById('originalText').value 
+                : document.getElementById('modifiedText').value;
+            
+            if (!text) {
+                alert('没有可复制的内容');
+                return;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('已复制到剪贴板');
+            }).catch(err => {
+                alert('复制失败: ' + err.message);
+            });
+        }
+
+        function copyResult() {
+            const outputContainer = document.getElementById('outputContainer');
+            const text = outputContainer.innerText;
+            
+            if (!text || text.includes('请在上下方输入文本')) {
+                alert('没有可复制的结果');
+                return;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('结果已复制到剪贴板');
+            }).catch(err => {
+                alert('复制失败: ' + err.message);
+            });
+        }
+
+        let debounceTimer;
+        document.getElementById('originalText').addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(compareTexts, 500);
+        });
+
+        document.getElementById('modifiedText').addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(compareTexts, 500);
+        });
+
+        document.getElementById('ignoreSpaces').addEventListener('change', compareTexts);
+        document.getElementById('ignoreCase').addEventListener('change', compareTexts);
+        document.getElementById('showLineNumbers').addEventListener('change', compareTexts);
+    </script>
+</body>
+</html>
+

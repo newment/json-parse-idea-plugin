@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON 解析器</title>
+    <link rel="icon" href="assets/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: "Public Sans", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        @media (max-width: 968px) {
+            .panel-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-left {
+            border-right: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 968px) {
+            .panel-left {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .panel-title::before {
+            content: '';
+            width: 4px;
+            height: 14px;
+            background: #667eea;
+            border-radius: 2px;
+        }
+
+        #jsonInput {
+            width: 100%;
+            min-width: 0;
+            height: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+            resize: none;
+            transition: border-color 0.3s ease;
+            overflow: auto;
+        }
+
+        #jsonInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd6;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-clear, .btn-copy {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            z-index: 10;
+        }
+
+        .btn-clear:hover, .btn-copy:hover {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-copy {
+            right: 45px;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        #outputContainer {
+            flex: 1;
+            height: 100%;
+            overflow: auto;
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* JSON Formatter Styles */
+        .json-container {
+            font-family: 'Public Sans', 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.5;
+            white-space: pre;
+            padding-top: 5px;
+            display: inline-block;
+            min-width: 100%;
+        }
+
+        .json-line {
+            display: block;
+            min-height: 22px;
+            line-height: 22px;
+        }
+
+        .json-line.collapsed {
+            display: none;
+        }
+
+        .json-children.collapsed {
+            display: none;
+        }
+
+        .json-key {
+            color: #92278F;
+        }
+
+        .json-string {
+            color: #3AB54A;
+        }
+
+        .json-number {
+            color: #25AAE2;
+        }
+
+        .json-boolean {
+            color: #F98280;
+        }
+
+        .json-null {
+            color: #F1592A;
+            font-style: italic;
+        }
+
+        .json-bracket {
+            color: #616161;
+        }
+
+        .json-colon {
+            color: #616161;
+        }
+
+        .json-comma {
+            color: #616161;
+        }
+
+        .json-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            color: #00CFE8;
+            border-radius: 3px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            margin-right: 0;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            vertical-align: middle;
+            padding: 0;
+        }
+
+        .json-toggle svg {
+            color: #00CFE8;
+            transition: color 0.2s ease;
+        }
+
+        .json-toggle:hover {
+            background: #f0f0f0;
+        }
+
+        .json-toggle:hover svg {
+            color: #00b8d4;
+        }
+
+        .json-toggle.expanded svg {
+            color: #EA5455;
+        }
+
+        .json-toggle.expanded:hover svg {
+            color: #d73a3a;
+        }
+
+        .json-collapse-indicator {
+            color: #9e9e9e;
+            font-size: 12px;
+            margin-left: 4px;
+            cursor: pointer;
+        }
+
+        .json-collapse-indicator.hidden {
+            display: none;
+        }
+
+        .json-collapse-indicator:hover {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panel-wrapper">
+            <div class="panel panel-left">
+                <div class="panel-title">
+                    JSON 输入
+                    <span id="errorHint" style="color: #EA5455; font-size: 12px; font-weight: normal; margin-left: 8px; display: none;"></span>
+                </div>
+                <button class="btn-clear" onclick="clearAll()" title="清空">✕</button>
+                <button class="btn-copy" onclick="copyJSON()" title="复制">📋</button>
+                <textarea 
+                    id="jsonInput" 
+                    placeholder='请输入JSON数据...'
+                ></textarea>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">
+                    解析结果
+                    <span id="successHint" style="color: #4caf50; font-size: 12px; font-weight: normal; margin-left: 8px; display: none;"></span>
+                </div>
+                <button class="btn-copy" onclick="copyJSON()" title="复制">📋</button>
+                <div id="outputContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>请在左侧输入 JSON数据</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let collapsedNodes = new Set();
+        let nodeIdCounter = 0;
+        let parsedJSONData = null;
+
+        function getType(value) {
+            if (value === null) return 'null';
+            if (Array.isArray(value)) return 'array';
+            return typeof value;
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function formatValue(value, type) {
+            if (type === 'string') return `<span class="json-string">"${escapeHtml(value)}"</span>`;
+            if (type === 'null') return `<span class="json-null">null</span>`;
+            if (type === 'boolean') return `<span class="json-boolean">${value}</span>`;
+            if (type === 'number') return `<span class="json-number">${value}</span>`;
+            return String(value);
+        }
+
+        function createCollapsibleLine(key, value, indent, isLast, parentId) {
+            const type = getType(value);
+            const isExpandable = type === 'object' || type === 'array';
+            const lineId = `node_${nodeIdCounter++}`;
+            
+            let html = '';
+            
+            if (isExpandable) {
+                const isCollapsed = collapsedNodes.has(lineId);
+                const childCount = type === 'array' ? value.length : Object.keys(value).length;
+                const collapseText = type === 'array' ? `Array[${childCount}]` : `Object{${childCount}}`;
+
+                if (key !== null && typeof key !== 'number') {
+                    html += `<span class="json-key">"${escapeHtml(key)}"</span><span class="json-colon">:</span>`;
+                }
+                
+                const toggleIcon = isCollapsed 
+                    ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="6" ry="6"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>'
+                    : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="6" ry="6"></rect><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
+                html += `<span class="json-toggle ${isCollapsed ? '' : 'expanded'}" data-line-id="${lineId}" onclick="toggleNode('${lineId}', this)">${toggleIcon}</span>`;
+                if (isCollapsed) {
+                    html += `<span class="json-collapse-indicator" data-line-id="${lineId}" onclick="toggleNode('${lineId}', this.parentElement.querySelector('.json-toggle'))">${collapseText}</span>`;
+                } else {
+                    html += `<span class="json-bracket">${type === 'array' ? '[' : '{'}</span>`;
+                }
+                
+                html = `<div class="json-line" id="${lineId}" data-collapse-text="${collapseText}" style="padding-left: ${indent}px">${html}</div>`;
+                
+                const childIndent = indent + 30;
+                let childrenHtml = '';
+                
+                if (type === 'array') {
+                    value.forEach((item, index) => {
+                        const isLastItem = index === value.length - 1;
+                        childrenHtml += createLine(index, item, childIndent, isLastItem, lineId);
+                    });
+                } else {
+                    const keys = Object.keys(value);
+                    keys.forEach((k, index) => {
+                        const isLastItem = index === keys.length - 1;
+                        childrenHtml += createLine(k, value[k], childIndent, isLastItem, lineId);
+                    });
+                }
+                
+                childrenHtml += `<div class="json-line" style="padding-left: ${indent}px"><span class="json-bracket">${type === 'array' ? ']' : '}'}</span>${isLast ? '' : '<span class="json-comma">,</span>'}</div>`;
+                
+                html += `<div class="json-children ${isCollapsed ? 'collapsed' : ''}" data-parent="${lineId}">${childrenHtml}</div>`;
+            } else {
+                if (key !== null && typeof key !== 'number') {
+                    html += `<span class="json-key">"${escapeHtml(key)}"</span><span class="json-colon">: </span>`;
+                }
+                html += formatValue(value, type);
+                if (!isLast) {
+                    html += `<span class="json-comma">,</span>`;
+                }
+                
+                html = `<div class="json-line" style="padding-left: ${indent}px">${html}</div>`;
+            }
+            
+            return html;
+        }
+
+        function createLine(key, value, indent, isLast, parentId) {
+            return createCollapsibleLine(key, value, indent, isLast, parentId);
+        }
+
+        function toggleNode(lineId, btn) {
+            const lineDiv = document.getElementById(lineId);
+            const childrenDiv = document.querySelector(`.json-children[data-parent="${lineId}"]`);
+            if (!childrenDiv || !lineDiv) return;
+            
+            const isCollapsed = childrenDiv.classList.contains('collapsed');
+            
+            if (isCollapsed) {
+                childrenDiv.classList.remove('collapsed');
+                btn.classList.add('expanded');
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="6" ry="6"></rect><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
+                lineDiv.querySelector('.json-bracket').style.display = 'inline';
+                const indicator = lineDiv.querySelector('.json-collapse-indicator');
+                if (indicator) indicator.remove();
+                collapsedNodes.delete(lineId);
+            } else {
+                childrenDiv.classList.add('collapsed');
+                btn.classList.remove('expanded');
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="6" ry="6"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
+                const bracket = lineDiv.querySelector('.json-bracket');
+                if (bracket) bracket.style.display = 'none';
+                const collapseText = lineDiv.getAttribute('data-collapse-text');
+                if (collapseText) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'json-collapse-indicator';
+                    indicator.setAttribute('data-line-id', lineId);
+                    indicator.textContent = collapseText;
+                    indicator.onclick = function() { toggleNode(lineId, btn); };
+                    lineDiv.appendChild(indicator);
+                }
+                collapsedNodes.add(lineId);
+            }
+        }
+
+        function parseJSON() {
+            const input = document.getElementById('jsonInput').value.trim();
+            const errorHint = document.getElementById('errorHint');
+            const outputContainer = document.getElementById('outputContainer');
+            const successHint = document.getElementById('successHint');
+
+            errorHint.style.display = 'none';
+            successHint.style.display = 'none';
+            collapsedNodes.clear();
+            nodeIdCounter = 0;
+
+            if (!input) {
+                showError('请输入 JSON数据');
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(input);
+                parsedJSONData = parsed;
+                renderJSON(parsed);
+                successHint.textContent = `✅ 解析成功！数据类型：${getType(parsed) === 'array' ? '数组' : '对象'}`;
+                successHint.style.display = 'inline';
+            } catch (e) {
+                showError(`❌ JSON 格式错误：${e.message}`);
+                outputContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <p>无法解析输入的JSON<br>请检查格式是否正确</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderJSON(data) {
+            const outputContainer = document.getElementById('outputContainer');
+            outputContainer.innerHTML = '';
+
+            const container = document.createElement('div');
+            container.className = 'json-container';
+            
+            const type = getType(data);
+            const isLast = true;
+            
+            if (type === 'object' || type === 'array') {
+                container.innerHTML = createCollapsibleLine(null, data, 0, isLast, 'root');
+            } else {
+                container.innerHTML = createLine(null, data, 0, isLast, 'root');
+            }
+            
+            outputContainer.appendChild(container);
+        }
+
+        function showError(message) {
+            const errorHint = document.getElementById('errorHint');
+            errorHint.textContent = message;
+            errorHint.style.display = 'inline';
+        }
+
+        function copyJSON() {
+            if (!parsedJSONData) {
+                showError('没有可复制的 JSON 数据');
+                return;
+            }
+            
+            const formattedJSON = JSON.stringify(parsedJSONData, null, 2);
+            
+            navigator.clipboard.writeText(formattedJSON).then(() => {
+                const successHint = document.getElementById('successHint');
+                successHint.textContent = '✅ 已复制到剪贴板';
+                successHint.style.display = 'inline';
+                setTimeout(() => {
+                    successHint.style.display = 'none';
+                }, 2000);
+            }).catch(err => {
+                showError('复制失败: ' + err.message);
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('jsonInput').value = '';
+            document.getElementById('outputContainer').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>请在左侧输入 JSON数据<br>点击"解析 JSON"按钮查看结果</p>
+                </div>
+            `;
+            document.getElementById('errorHint').style.display = 'none';
+            document.getElementById('successHint').style.display = 'none';
+            collapsedNodes.clear();
+        }
+
+        let debounceTimer;
+        document.getElementById('jsonInput').addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function() {
+                parseJSON();
+            }, 300);
+        });
+
+        document.getElementById('jsonInput').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                parseJSON();
+            }
+        });
+    </script>
+</body>
+</html>

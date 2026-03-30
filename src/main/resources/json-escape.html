@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON转义</title>
+    <link rel="icon" href="assets/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: "Public Sans", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex: 1;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        @media (max-width: 968px) {
+            .panel-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-left {
+            border-right: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 968px) {
+            .panel-left {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .panel-title::before {
+            content: '';
+            width: 4px;
+            height: 14px;
+            background: #667eea;
+            border-radius: 2px;
+        }
+
+        .text-input {
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+            resize: none;
+            transition: border-color 0.3s ease;
+            overflow: auto;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd6;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #43a047;
+        }
+
+        .btn-danger {
+            background: #EA5455;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d73a3a;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-clear, .btn-copy {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            z-index: 10;
+        }
+
+        .btn-clear:hover, .btn-copy:hover {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-copy {
+            right: 45px;
+        }
+
+        #outputContainer {
+            flex: 1;
+            height: 100%;
+            overflow: auto;
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            min-width: 0;
+            max-width: 100%;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            box-sizing: border-box;
+        }
+
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c00;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-hint {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .success-hint.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .action-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .action-card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .action-card h3 {
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .action-card p {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .action-card .btn {
+            width: 100%;
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+
+        .info-bar {
+            display: flex;
+            gap: 16px;
+            padding: 8px 12px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-size: 12px;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #666;
+        }
+
+        .info-item strong {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panel-wrapper">
+            <div class="panel panel-left">
+                <div class="panel-title">
+                    输入
+                    <span id="errorHint"
+                          style="color: #EA5455; font-size: 12px; font-weight: normal; margin-left: 8px; display: none;"></span>
+                    <span id="successHint"
+                          style="color: #4caf50; font-size: 12px; font-weight: normal; margin-left: 8px; display: none;"></span>
+                </div>
+                <button class="btn-clear" onclick="clearInput()" title="清空">✕</button>
+                <button class="btn-copy" onclick="copyInput()" title="复制">📋</button>
+                <textarea
+                        id="jsonInput"
+                        class="text-input"
+                        placeholder="请输入JSON文本或普通文本..."
+                ></textarea>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">
+                    输出
+                    <span id="infoBar" class="info-bar"
+                          style="display: none; margin-left: 8px; border: none; padding: 0; background: none; font-size: 12px;"></span>
+                </div>
+                <button class="btn-copy" onclick="copyOutput()" title="复制结果">📋</button>
+                <div id="outputContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <p>请在左侧输入内容<br>选择相应功能按钮进行处理</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 12px; border-top: 1px solid #e0e0e0; flex-shrink: 0;">
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="compressJSON()">
+                    <span>📦</span> 压缩JSON
+                </button>
+                <button class="btn btn-success" onclick="escapeJSON()">
+                    <span>🔒</span> 转义文本
+                </button>
+                <button class="btn btn-secondary" onclick="unescapeJSON()">
+                    <span>🔓</span> 去转义
+                </button>
+                <button class="btn btn-danger" onclick="swapAndProcess()">
+                    <span>⇄</span> 交换并处理
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function showError(message) {
+            const errorHint = document.getElementById('errorHint');
+            const successHint = document.getElementById('successHint');
+            const outputContainer = document.getElementById('outputContainer');
+            const infoBar = document.getElementById('infoBar');
+
+            errorHint.textContent = message;
+            errorHint.style.display = 'inline';
+            successHint.style.display = 'none';
+            infoBar.style.display = 'none';
+
+            outputContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <p>处理失败<br>${escapeHtml(message)}</p>
+                </div>
+            `;
+        }
+
+        function showSuccess(message) {
+            const successHint = document.getElementById('successHint');
+            const errorHint = document.getElementById('errorHint');
+            errorHint.style.display = 'none';
+            successHint.textContent = message;
+            successHint.style.display = 'inline';
+        }
+
+        function updateOutput(result, originalLength, resultLength) {
+            const outputContainer = document.getElementById('outputContainer');
+            const infoBar = document.getElementById('infoBar');
+
+            outputContainer.innerHTML = `<div style="white-space: pre-wrap; word-break: break-all;">${escapeHtml(result)}</div>`;
+
+            if (originalLength !== undefined && resultLength !== undefined) {
+                const reduction = originalLength - resultLength;
+                const percent = originalLength > 0 ? ((reduction / originalLength) * 100).toFixed(1) : 0;
+
+                infoBar.style.display = 'inline';
+                infoBar.innerHTML = `
+                    <span style="color: #666;">原始 ${originalLength} → 处理后 ${resultLength} | 减少 ${reduction} 字符 (${percent}%)</span>
+                `;
+            }
+        }
+
+        function compressJSON() {
+            const input = document.getElementById('jsonInput').value;
+            const errorHint = document.getElementById('errorHint');
+            const successHint = document.getElementById('successHint');
+
+            errorHint.style.display = 'none';
+            successHint.style.display = 'none';
+
+            if (!input.trim()) {
+                showError('请输入JSON数据');
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(input);
+                const compressed = JSON.stringify(parsed);
+
+                updateOutput(compressed, input.length, compressed.length);
+                successHint.textContent = '✅ JSON压缩成功！';
+                successHint.style.display = 'inline';
+            } catch (e) {
+                showError('JSON格式错误：' + e.message);
+            }
+        }
+
+        function escapeJSON() {
+            const input = document.getElementById('jsonInput').value;
+            const errorHint = document.getElementById('errorHint');
+            const successHint = document.getElementById('successHint');
+
+            errorHint.style.display = 'none';
+            successHint.style.display = 'none';
+
+            if (!input.trim()) {
+                showError('请输入需要转义的文本');
+                return;
+            }
+
+            try {
+                const escaped = JSON.stringify(input);
+                const result = escaped.slice(1, -1);
+
+                updateOutput(result, input.length, result.length);
+                successHint.textContent = '✅ 文本转义成功！';
+                successHint.style.display = 'inline';
+            } catch (e) {
+                showError('转义失败：' + e.message);
+            }
+        }
+
+        function unescapeJSON() {
+            const input = document.getElementById('jsonInput').value;
+            const errorHint = document.getElementById('errorHint');
+            const successHint = document.getElementById('successHint');
+
+            errorHint.style.display = 'none';
+            successHint.style.display = 'none';
+
+            if (!input.trim()) {
+                showError('请输入需要去转义的字符串');
+                return;
+            }
+
+            try {
+                const wrapped = '"' + input + '"';
+                const unescaped = JSON.parse(wrapped);
+
+                updateOutput(unescaped, input.length, unescaped.length);
+                successHint.textContent = '✅ 去转义成功！';
+                successHint.style.display = 'inline';
+            } catch (e) {
+                showError('去转义失败：' + e.message);
+            }
+        }
+
+        function swapAndProcess() {
+            const input = document.getElementById('jsonInput').value;
+            const output = document.getElementById('outputContainer').textContent;
+
+            if (output && !output.includes('请在左侧输入') && !output.includes('处理失败')) {
+                document.getElementById('jsonInput').value = output;
+
+                const infoBar = document.getElementById('infoBar');
+                if (infoBar.style.display !== 'none') {
+                    compressJSON();
+                } else {
+                    unescapeJSON();
+                }
+            } else {
+                showError('没有可交换的输出内容');
+            }
+        }
+
+        function clearInput() {
+            document.getElementById('jsonInput').value = '';
+            document.getElementById('outputContainer').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📦</div>
+                    <p>请在左侧输入内容<br>选择相应功能按钮进行处理</p>
+                </div>
+            `;
+            document.getElementById('infoBar').style.display = 'none';
+            document.getElementById('errorHint').style.display = 'none';
+            document.getElementById('successHint').style.display = 'none';
+        }
+
+        function copyInput() {
+            const text = document.getElementById('jsonInput').value;
+
+            if (!text) {
+                showError('没有可复制的内容');
+                return;
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                showSuccess('已复制到剪贴板');
+            }).catch(err => {
+                showError('复制失败：' + err.message);
+            });
+        }
+
+        function copyOutput() {
+            const output = document.getElementById('outputContainer').textContent;
+
+            if (!output || output.includes('请在左侧输入') || output.includes('处理失败')) {
+                showError('没有可复制的结果');
+                return;
+            }
+
+            navigator.clipboard.writeText(output).then(() => {
+                showSuccess('结果已复制到剪贴板');
+            }).catch(err => {
+                showError('复制失败：' + err.message);
+            });
+        }
+
+        let debounceTimer;
+        document.getElementById('jsonInput').addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function () {
+                if (document.getElementById('jsonInput').value.trim()) {
+                    try {
+                        const parsed = JSON.parse(document.getElementById('jsonInput').value);
+                        const compressed = JSON.stringify(parsed);
+                        updateOutput(compressed, document.getElementById('jsonInput').value.length, compressed.length);
+                        document.getElementById('errorHint').style.display = 'none';
+                        document.getElementById('successHint').style.display = 'none';
+                    } catch (e) {
+                        // Not valid JSON, do nothing
+                    }
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>
