@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON转义</title>
+    <title>Base64编解码</title>
     <link rel="icon" href="assets/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,7 +44,7 @@
             min-height: 0;
         }
 
-        @media (max-width: 968px) {
+        @media (max-width: 768px) {
             .panel-wrapper {
                 grid-template-columns: 1fr;
             }
@@ -62,7 +62,7 @@
             border-right: 1px solid #e0e0e0;
         }
 
-        @media (max-width: 968px) {
+        @media (max-width: 768px) {
             .panel-left {
                 border-right: none;
                 border-bottom: 1px solid #e0e0e0;
@@ -263,7 +263,7 @@
 
         .action-cards {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 12px;
             padding: 12px;
             border-bottom: 1px solid #e0e0e0;
@@ -321,6 +321,38 @@
         .info-item strong {
             color: #333;
         }
+
+        .file-input-wrapper {
+            margin-top: 8px;
+        }
+
+        .file-input-wrapper label {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #f0f4ff;
+            color: #667eea;
+            border: 1px solid #d0d8ff;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .file-input-wrapper label:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .file-name {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -337,17 +369,24 @@
                 <button class="btn-clear" onclick="clearInput()" title="清空">✕</button>
                 <button class="btn-copy" onclick="copyInput()" title="复制">📋</button>
                 <textarea
-                        id="jsonInput"
+                        id="base64Input"
                         class="text-input"
-                        placeholder="请输入JSON文本或普通文本..."
+                        placeholder="请输入文本或Base64字符串..."
                 ></textarea>
+                <div class="file-input-wrapper">
+                    <label for="fileInput">
+                        📁 选择文件（自动Base64编码）
+                    </label>
+                    <input type="file" id="fileInput" onchange="handleFileSelect(event)">
+                    <div class="file-name" id="fileName"></div>
+                </div>
             </div>
 
             <div class="panel">
                 <div class="panel-title">
                     输出
-                    <span id="infoBar"
-                          style="visibility: hidden; margin-left: 8px; font-size: 12px; color: #666;"></span>
+                    <span id="infoBar" class="info-bar"
+                          style="display: none; margin-left: 8px; border: none; padding: 0; background: none; font-size: 12px;"></span>
                 </div>
                 <button class="btn-copy" onclick="copyOutput()" title="复制结果">📋</button>
                 <div id="outputContainer">
@@ -361,32 +400,23 @@
 
         <div style="padding: 12px; border-top: 1px solid #e0e0e0; flex-shrink: 0;">
             <div class="button-group">
-                <button class="btn btn-primary" onclick="compressJSON()">
-                    <span>📦</span> 压缩JSON
+                <button class="btn btn-primary" onclick="encodeBase64()">
+                    <span>🔒</span> 编码为Base64
                 </button>
-                <button class="btn btn-success" onclick="escapeJSON()">
-                    <span>🔒</span> 转义文本
+                <button class="btn btn-secondary" onclick="decodeBase64()">
+                    <span>🔓</span> 解码Base64
                 </button>
-                <button class="btn btn-secondary" onclick="unescapeJSON()">
-                    <span>🔓</span> 去转义
+                <button class="btn btn-success" onclick="copyOutput()">
+                    <span>📋</span> 复制结果
                 </button>
-                <button class="btn btn-danger" onclick="swapAndProcess()">
-                    <span>⇄</span> 交换并处理
+                <button class="btn btn-danger" onclick="clearInput()">
+                    <span>🗑️</span> 清空
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-        function escapeHtml(str) {
-            if (str === null || str === undefined) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
-        }
-
         function showError(message) {
             const errorHint = document.getElementById('errorHint');
             const successHint = document.getElementById('successHint');
@@ -396,7 +426,7 @@
             errorHint.textContent = message;
             errorHint.style.display = 'inline';
             successHint.style.display = 'none';
-            infoBar.style.visibility = 'hidden';
+            infoBar.style.display = 'none';
 
             outputContainer.innerHTML = `
                 <div class="empty-state">
@@ -414,116 +444,88 @@
             successHint.style.display = 'inline';
         }
 
-        function updateOutput(result, originalLength, resultLength) {
+        function updateOutput(result, info) {
             const outputContainer = document.getElementById('outputContainer');
             const infoBar = document.getElementById('infoBar');
 
-            outputContainer.innerHTML = `<div style="white-space: pre-wrap; word-break: break-all; font-family: 'Monaco', 'Menlo', 'Courier New', monospace; font-size: 13px;">${escapeHtml(result)}</div>`;
+            outputContainer.innerHTML = `<div style="white-space: pre-wrap; word-break: break-all;">${escapeHtml(result)}</div>`;
 
-            if (originalLength !== undefined && resultLength !== undefined) {
-                const reduction = originalLength - resultLength;
-                const percent = originalLength > 0 ? ((reduction / originalLength) * 100).toFixed(1) : 0;
-
-                infoBar.style.visibility = 'visible';
-                infoBar.textContent = `原始 ${originalLength} → 处理后 ${resultLength} | 减少 ${reduction} 字符 (${percent}%)`;
+            if (info) {
+                infoBar.style.display = 'inline';
+                infoBar.innerHTML = `<span style="color: #666;">${info}</span>`;
             }
         }
 
-        function compressJSON() {
-            const input = document.getElementById('jsonInput').value;
-            const errorHint = document.getElementById('errorHint');
-            const successHint = document.getElementById('successHint');
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
 
-            errorHint.style.display = 'none';
-            successHint.style.display = 'none';
+        function encodeBase64() {
+            const input = document.getElementById('base64Input').value;
 
             if (!input.trim()) {
-                showError('请输入JSON数据');
+                showError('请输入需要编码的内容');
                 return;
             }
 
             try {
-                const parsed = JSON.parse(input);
-                const compressed = JSON.stringify(parsed);
-
-                updateOutput(compressed, input.length, compressed.length);
-                successHint.textContent = '✅ JSON压缩成功！';
-                successHint.style.display = 'inline';
+                const encoded = btoa(unescape(encodeURIComponent(input)));
+                updateOutput(encoded, `原文 ${input.length} 字符 → Base64 ${encoded.length} 字符`);
+                showSuccess('✅ 编码成功！');
             } catch (e) {
-                showError('JSON格式错误：' + e.message);
+                showError('编码失败：' + e.message);
             }
         }
 
-        function escapeJSON() {
-            const input = document.getElementById('jsonInput').value;
-            const errorHint = document.getElementById('errorHint');
-            const successHint = document.getElementById('successHint');
+        function decodeBase64() {
+            const input = document.getElementById('base64Input').value.trim();
 
-            errorHint.style.display = 'none';
-            successHint.style.display = 'none';
-
-            if (!input.trim()) {
-                showError('请输入需要转义的文本');
+            if (!input) {
+                showError('请输入需要解码的Base64字符串');
                 return;
             }
 
             try {
-                const escaped = JSON.stringify(input);
-                const result = escaped.slice(1, -1);
-
-                updateOutput(result, input.length, result.length);
-                successHint.textContent = '✅ 文本转义成功！';
-                successHint.style.display = 'inline';
+                const decoded = decodeURIComponent(escape(atob(input)));
+                updateOutput(decoded, `Base64 ${input.length} 字符 → 解码 ${decoded.length} 字符`);
+                showSuccess('✅ 解码成功！');
             } catch (e) {
-                showError('转义失败：' + e.message);
+                showError('解码失败：无效的Base64字符串');
             }
         }
 
-        function unescapeJSON() {
-            const input = document.getElementById('jsonInput').value;
-            const errorHint = document.getElementById('errorHint');
-            const successHint = document.getElementById('successHint');
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-            errorHint.style.display = 'none';
-            successHint.style.display = 'none';
+            document.getElementById('fileName').textContent = `已选择: ${file.name} (${formatFileSize(file.size)})`;
 
-            if (!input.trim()) {
-                showError('请输入需要去转义的字符串');
-                return;
-            }
-
-            try {
-                const wrapped = '"' + input + '"';
-                const unescaped = JSON.parse(wrapped);
-
-                updateOutput(unescaped, input.length, unescaped.length);
-                successHint.textContent = '✅ 去转义成功！';
-                successHint.style.display = 'inline';
-            } catch (e) {
-                showError('去转义失败：' + e.message);
-            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                document.getElementById('base64Input').value = base64;
+                updateOutput(base64, `文件 ${formatFileSize(file.size)}`);
+                showSuccess('✅ 文件已转为Base64！');
+            };
+            reader.onerror = function() {
+                showError('文件读取失败');
+            };
+            reader.readAsDataURL(file);
         }
 
-        function swapAndProcess() {
-            const input = document.getElementById('jsonInput').value;
-            const output = document.getElementById('outputContainer').textContent;
-
-            if (output && !output.includes('请在左侧输入') && !output.includes('处理失败')) {
-                document.getElementById('jsonInput').value = output;
-
-                const infoBar = document.getElementById('infoBar');
-                if (infoBar.style.visibility !== 'hidden') {
-                    compressJSON();
-                } else {
-                    unescapeJSON();
-                }
-            } else {
-                showError('没有可交换的输出内容');
-            }
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
         }
 
         function clearInput() {
-            document.getElementById('jsonInput').value = '';
+            document.getElementById('base64Input').value = '';
             document.getElementById('outputContainer').innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">📦</div>
@@ -533,10 +535,12 @@
             document.getElementById('infoBar').style.display = 'none';
             document.getElementById('errorHint').style.display = 'none';
             document.getElementById('successHint').style.display = 'none';
+            document.getElementById('fileName').textContent = '';
+            document.getElementById('fileInput').value = '';
         }
 
         function copyInput() {
-            const text = document.getElementById('jsonInput').value;
+            const text = document.getElementById('base64Input').value;
 
             if (!text) {
                 showError('没有可复制的内容');
@@ -566,21 +570,35 @@
         }
 
         let debounceTimer;
-        document.getElementById('jsonInput').addEventListener('input', function () {
+        document.getElementById('base64Input').addEventListener('input', function () {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(function () {
-                if (document.getElementById('jsonInput').value.trim()) {
-                    try {
-                        const parsed = JSON.parse(document.getElementById('jsonInput').value);
-                        const compressed = JSON.stringify(parsed);
-                        updateOutput(compressed, document.getElementById('jsonInput').value.length, compressed.length);
-                        document.getElementById('errorHint').style.display = 'none';
-                        document.getElementById('successHint').style.display = 'none';
-                    } catch (e) {
-                        // Not valid JSON, do nothing
+                const input = document.getElementById('base64Input').value.trim();
+                if (!input) return;
+
+                // Auto-detect: if valid base64 and not valid UTF-8 text, try decode
+                // Otherwise try encode
+                try {
+                    // Check if it looks like base64
+                    if (/^[A-Za-z0-9+/]+=*$/.test(input) && input.length % 4 === 0) {
+                        try {
+                            decodeBase64();
+                            return;
+                        } catch (e) {
+                            // Not valid base64, try encode
+                        }
                     }
+                    encodeBase64();
+                } catch (e) {
+                    // Invalid input, do nothing
                 }
             }, 500);
+        });
+
+        document.getElementById('base64Input').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                encodeBase64();
+            }
         });
     </script>
 </body>

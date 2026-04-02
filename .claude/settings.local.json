@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -rf ~/.gradle/caches/8.14.4)",
+      "Bash(./gradlew build:*)",
+      "Bash(gradle wrapper:*)",
+      "Bash(git checkout:*)",
+      "Bash(curl:*)",
+      "Bash(./gradlew --stop)",
+      "Bash(./gradlew tasks:*)",
+      "Bash(./gradlew jar:*)",
+      "Bash(./gradlew clean:*)"
+    ]
+  }
+}

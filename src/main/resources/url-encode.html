@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON转义</title>
+    <title>URL编解码</title>
     <link rel="icon" href="assets/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,7 +44,7 @@
             min-height: 0;
         }
 
-        @media (max-width: 968px) {
+        @media (max-width: 768px) {
             .panel-wrapper {
                 grid-template-columns: 1fr;
             }
@@ -62,7 +62,7 @@
             border-right: 1px solid #e0e0e0;
         }
 
-        @media (max-width: 968px) {
+        @media (max-width: 768px) {
             .panel-left {
                 border-right: none;
                 border-bottom: 1px solid #e0e0e0;
@@ -263,7 +263,7 @@
 
         .action-cards {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 12px;
             padding: 12px;
             border-bottom: 1px solid #e0e0e0;
@@ -271,7 +271,7 @@
 
         @media (max-width: 768px) {
             .action-cards {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
@@ -321,6 +321,32 @@
         .info-item strong {
             color: #333;
         }
+
+        .mode-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .mode-tab {
+            padding: 6px 12px;
+            font-size: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mode-tab:hover {
+            background: #f5f5f5;
+        }
+
+        .mode-tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
     </style>
 </head>
 <body>
@@ -337,22 +363,22 @@
                 <button class="btn-clear" onclick="clearInput()" title="清空">✕</button>
                 <button class="btn-copy" onclick="copyInput()" title="复制">📋</button>
                 <textarea
-                        id="jsonInput"
+                        id="urlInput"
                         class="text-input"
-                        placeholder="请输入JSON文本或普通文本..."
+                        placeholder="请输入需要编解码的URL或文本..."
                 ></textarea>
             </div>
 
             <div class="panel">
                 <div class="panel-title">
                     输出
-                    <span id="infoBar"
-                          style="visibility: hidden; margin-left: 8px; font-size: 12px; color: #666;"></span>
+                    <span id="infoBar" class="info-bar"
+                          style="display: none; margin-left: 8px; border: none; padding: 0; background: none; font-size: 12px;"></span>
                 </div>
                 <button class="btn-copy" onclick="copyOutput()" title="复制结果">📋</button>
                 <div id="outputContainer">
                     <div class="empty-state">
-                        <div class="empty-state-icon">📦</div>
+                        <div class="empty-state-icon">🔗</div>
                         <p>请在左侧输入内容<br>选择相应功能按钮进行处理</p>
                     </div>
                 </div>
@@ -360,43 +386,43 @@
         </div>
 
         <div style="padding: 12px; border-top: 1px solid #e0e0e0; flex-shrink: 0;">
+            <div class="mode-tabs">
+                <button class="mode-tab active" onclick="setMode('encode')" id="tab-encode">URL编码</button>
+                <button class="mode-tab" onclick="setMode('decode')" id="tab-decode">URL解码</button>
+                <button class="mode-tab" onclick="setMode('component')" id="tab-component">组件编码</button>
+                <button class="mode-tab" onclick="setMode('full')" id="tab-full">完整编码</button>
+            </div>
             <div class="button-group">
-                <button class="btn btn-primary" onclick="compressJSON()">
-                    <span>📦</span> 压缩JSON
+                <button class="btn btn-primary" onclick="processURL()">
+                    <span>⚡</span> 转换
                 </button>
-                <button class="btn btn-success" onclick="escapeJSON()">
-                    <span>🔒</span> 转义文本
+                <button class="btn btn-success" onclick="copyOutput()">
+                    <span>📋</span> 复制结果
                 </button>
-                <button class="btn btn-secondary" onclick="unescapeJSON()">
-                    <span>🔓</span> 去转义
-                </button>
-                <button class="btn btn-danger" onclick="swapAndProcess()">
-                    <span>⇄</span> 交换并处理
+                <button class="btn btn-danger" onclick="clearInput()">
+                    <span>🗑️</span> 清空
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-        function escapeHtml(str) {
-            if (str === null || str === undefined) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
+        let currentMode = 'encode';
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('tab-' + mode).classList.add('active');
         }
 
         function showError(message) {
             const errorHint = document.getElementById('errorHint');
             const successHint = document.getElementById('successHint');
             const outputContainer = document.getElementById('outputContainer');
-            const infoBar = document.getElementById('infoBar');
 
             errorHint.textContent = message;
             errorHint.style.display = 'inline';
             successHint.style.display = 'none';
-            infoBar.style.visibility = 'hidden';
 
             outputContainer.innerHTML = `
                 <div class="empty-state">
@@ -418,19 +444,33 @@
             const outputContainer = document.getElementById('outputContainer');
             const infoBar = document.getElementById('infoBar');
 
-            outputContainer.innerHTML = `<div style="white-space: pre-wrap; word-break: break-all; font-family: 'Monaco', 'Menlo', 'Courier New', monospace; font-size: 13px;">${escapeHtml(result)}</div>`;
+            outputContainer.innerHTML = `<div style="white-space: pre-wrap; word-break: break-all;">${escapeHtml(result)}</div>`;
 
             if (originalLength !== undefined && resultLength !== undefined) {
-                const reduction = originalLength - resultLength;
-                const percent = originalLength > 0 ? ((reduction / originalLength) * 100).toFixed(1) : 0;
-
-                infoBar.style.visibility = 'visible';
-                infoBar.textContent = `原始 ${originalLength} → 处理后 ${resultLength} | 减少 ${reduction} 字符 (${percent}%)`;
+                infoBar.style.display = 'inline';
+                infoBar.innerHTML = `
+                    <span style="color: #666;">原始 ${originalLength} 字符 → 处理后 ${resultLength} 字符</span>
+                `;
             }
         }
 
-        function compressJSON() {
-            const input = document.getElementById('jsonInput').value;
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function encodeURIComponentCustom(str) {
+            return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
+                return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+            });
+        }
+
+        function processURL() {
+            const input = document.getElementById('urlInput').value;
             const errorHint = document.getElementById('errorHint');
             const successHint = document.getElementById('successHint');
 
@@ -438,95 +478,39 @@
             successHint.style.display = 'none';
 
             if (!input.trim()) {
-                showError('请输入JSON数据');
+                showError('请输入需要处理的内容');
                 return;
             }
 
             try {
-                const parsed = JSON.parse(input);
-                const compressed = JSON.stringify(parsed);
-
-                updateOutput(compressed, input.length, compressed.length);
-                successHint.textContent = '✅ JSON压缩成功！';
-                successHint.style.display = 'inline';
-            } catch (e) {
-                showError('JSON格式错误：' + e.message);
-            }
-        }
-
-        function escapeJSON() {
-            const input = document.getElementById('jsonInput').value;
-            const errorHint = document.getElementById('errorHint');
-            const successHint = document.getElementById('successHint');
-
-            errorHint.style.display = 'none';
-            successHint.style.display = 'none';
-
-            if (!input.trim()) {
-                showError('请输入需要转义的文本');
-                return;
-            }
-
-            try {
-                const escaped = JSON.stringify(input);
-                const result = escaped.slice(1, -1);
+                let result;
+                switch (currentMode) {
+                    case 'encode':
+                        result = encodeURI(input);
+                        break;
+                    case 'decode':
+                        result = decodeURI(input);
+                        break;
+                    case 'component':
+                        result = encodeURIComponentCustom(input);
+                        break;
+                    case 'full':
+                        result = encodeURIComponent(input);
+                        break;
+                }
 
                 updateOutput(result, input.length, result.length);
-                successHint.textContent = '✅ 文本转义成功！';
-                successHint.style.display = 'inline';
+                showSuccess('✅ 转换成功！');
             } catch (e) {
-                showError('转义失败：' + e.message);
-            }
-        }
-
-        function unescapeJSON() {
-            const input = document.getElementById('jsonInput').value;
-            const errorHint = document.getElementById('errorHint');
-            const successHint = document.getElementById('successHint');
-
-            errorHint.style.display = 'none';
-            successHint.style.display = 'none';
-
-            if (!input.trim()) {
-                showError('请输入需要去转义的字符串');
-                return;
-            }
-
-            try {
-                const wrapped = '"' + input + '"';
-                const unescaped = JSON.parse(wrapped);
-
-                updateOutput(unescaped, input.length, unescaped.length);
-                successHint.textContent = '✅ 去转义成功！';
-                successHint.style.display = 'inline';
-            } catch (e) {
-                showError('去转义失败：' + e.message);
-            }
-        }
-
-        function swapAndProcess() {
-            const input = document.getElementById('jsonInput').value;
-            const output = document.getElementById('outputContainer').textContent;
-
-            if (output && !output.includes('请在左侧输入') && !output.includes('处理失败')) {
-                document.getElementById('jsonInput').value = output;
-
-                const infoBar = document.getElementById('infoBar');
-                if (infoBar.style.visibility !== 'hidden') {
-                    compressJSON();
-                } else {
-                    unescapeJSON();
-                }
-            } else {
-                showError('没有可交换的输出内容');
+                showError('转换失败：' + e.message);
             }
         }
 
         function clearInput() {
-            document.getElementById('jsonInput').value = '';
+            document.getElementById('urlInput').value = '';
             document.getElementById('outputContainer').innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-state-icon">📦</div>
+                    <div class="empty-state-icon">🔗</div>
                     <p>请在左侧输入内容<br>选择相应功能按钮进行处理</p>
                 </div>
             `;
@@ -536,7 +520,7 @@
         }
 
         function copyInput() {
-            const text = document.getElementById('jsonInput').value;
+            const text = document.getElementById('urlInput').value;
 
             if (!text) {
                 showError('没有可复制的内容');
@@ -566,21 +550,23 @@
         }
 
         let debounceTimer;
-        document.getElementById('jsonInput').addEventListener('input', function () {
+        document.getElementById('urlInput').addEventListener('input', function () {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(function () {
-                if (document.getElementById('jsonInput').value.trim()) {
+                if (document.getElementById('urlInput').value.trim()) {
                     try {
-                        const parsed = JSON.parse(document.getElementById('jsonInput').value);
-                        const compressed = JSON.stringify(parsed);
-                        updateOutput(compressed, document.getElementById('jsonInput').value.length, compressed.length);
-                        document.getElementById('errorHint').style.display = 'none';
-                        document.getElementById('successHint').style.display = 'none';
+                        processURL();
                     } catch (e) {
-                        // Not valid JSON, do nothing
+                        // Invalid input, do nothing
                     }
                 }
             }, 500);
+        });
+
+        document.getElementById('urlInput').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                processURL();
+            }
         });
     </script>
 </body>

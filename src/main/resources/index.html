@@ -192,6 +192,18 @@
                     <span class="icon">🔣</span>
                     <span class="link-text">JSON转义</span>
                 </a>
+                <a class="sidebar-link" data-page="timestamp" onclick="navigateTo('timestamp.html')">
+                    <span class="icon">🕐</span>
+                    <span class="link-text">时间戳转换</span>
+                </a>
+                <a class="sidebar-link" data-page="url-encode" onclick="navigateTo('url-encode.html')">
+                    <span class="icon">🔗</span>
+                    <span class="link-text">URL编解码</span>
+                </a>
+                <a class="sidebar-link" data-page="base64" onclick="navigateTo('base64.html')">
+                    <span class="icon">📦</span>
+                    <span class="link-text">Base64</span>
+                </a>
             </nav>
         </div>
     </div>
@@ -219,6 +231,18 @@
             'json-escape': {
                 title: '🔣 JSON转义与压缩',
                 desc: 'JSON 转义、去转义与压缩工具'
+            },
+            'timestamp': {
+                title: '🕐 时间戳转换',
+                desc: '毫秒/秒时间戳与日期时间互转'
+            },
+            'url-encode': {
+                title: '🔗 URL编解码',
+                desc: 'URL组件编码、全编码与解码'
+            },
+            'base64': {
+                title: '📦 Base64编解码',
+                desc: '文本与Base64字符串互转，支持文件'
             }
         };
 
