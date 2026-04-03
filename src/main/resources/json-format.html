@@ -342,9 +342,51 @@
     </div>
 
     <script>
+        const STORAGE_KEY = 'json_format_state';
+
         let collapsedNodes = new Set();
         let nodeIdCounter = 0;
         let parsedJSONData = null;
+
+        function saveState() {
+            const state = {
+                input: document.getElementById('jsonInput').value,
+                output: document.getElementById('outputContainer').innerHTML,
+                errorHintVisible: document.getElementById('errorHint').style.display === 'inline',
+                errorHintText: document.getElementById('errorHint').textContent,
+                successHintVisible: document.getElementById('successHint').style.display === 'inline',
+                successHintText: document.getElementById('successHint').textContent
+            };
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {}
+        }
+
+        function restoreState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return;
+
+                const state = JSON.parse(saved);
+                document.getElementById('jsonInput').value = state.input || '';
+
+                if (state.output) {
+                    document.getElementById('outputContainer').innerHTML = state.output;
+                }
+
+                if (state.errorHintVisible) {
+                    document.getElementById('errorHint').textContent = state.errorHintText;
+                    document.getElementById('errorHint').style.display = 'inline';
+                }
+
+                if (state.successHintVisible) {
+                    document.getElementById('successHint').textContent = state.successHintText;
+                    document.getElementById('successHint').style.display = 'inline';
+                }
+            } catch (e) {}
+        }
+
+        restoreState();
 
         function getType(value) {
             if (value === null) return 'null';
@@ -491,6 +533,7 @@
                 renderJSON(parsed);
                 successHint.textContent = `✅ 解析成功！数据类型：${getType(parsed) === 'array' ? '数组' : '对象'}`;
                 successHint.style.display = 'inline';
+                saveState();
             } catch (e) {
                 showError(`❌ JSON 格式错误：${e.message}`);
                 outputContainer.innerHTML = `
@@ -558,6 +601,7 @@
             document.getElementById('errorHint').style.display = 'none';
             document.getElementById('successHint').style.display = 'none';
             collapsedNodes.clear();
+            localStorage.removeItem(STORAGE_KEY);
         }
 
         let debounceTimer;

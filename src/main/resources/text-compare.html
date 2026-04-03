@@ -425,10 +425,46 @@
     </div>
 
     <script>
+        const STORAGE_KEY = 'text_compare_state';
+
         let originalLines = [];
         let modifiedLines = [];
         let diffResult = [];
         let comparisonStats = { added: 0, removed: 0, modified: 0, unchanged: 0 };
+
+        function saveState() {
+            const state = {
+                originalText: document.getElementById('originalText').value,
+                modifiedText: document.getElementById('modifiedText').value,
+                output: document.getElementById('outputContainer').innerHTML,
+                ignoreSpaces: document.getElementById('ignoreSpaces').checked,
+                ignoreCase: document.getElementById('ignoreCase').checked,
+                showLineNumbers: document.getElementById('showLineNumbers').checked
+            };
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {}
+        }
+
+        function restoreState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return;
+
+                const state = JSON.parse(saved);
+                document.getElementById('originalText').value = state.originalText || '';
+                document.getElementById('modifiedText').value = state.modifiedText || '';
+                document.getElementById('ignoreSpaces').checked = state.ignoreSpaces || false;
+                document.getElementById('ignoreCase').checked = state.ignoreCase || false;
+                document.getElementById('showLineNumbers').checked = state.showLineNumbers || true;
+
+                if (state.output) {
+                    document.getElementById('outputContainer').innerHTML = state.output;
+                }
+            } catch (e) {}
+        }
+
+        restoreState();
 
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
@@ -561,6 +597,7 @@
                     <span>总行数: <strong>${modifiedLines.length}</strong></span>
                 </div>
             `;
+            saveState();
         }
 
         function swapTexts() {
@@ -588,6 +625,7 @@
                 </div>
             `;
             document.getElementById('statsContainer').style.display = 'none';
+            localStorage.removeItem(STORAGE_KEY);
         }
 
         function copyText(type) {

@@ -356,6 +356,50 @@
     </div>
 
     <script>
+        const STORAGE_KEY = 'timestamp_state';
+
+        function saveState() {
+            const state = {
+                msInput: document.getElementById('msInput').value,
+                msResult: document.getElementById('msResult').querySelector('.result-value').innerHTML,
+                sInput: document.getElementById('sInput').value,
+                sResult: document.getElementById('sResult').querySelector('.result-value').innerHTML,
+                datetimeInput: document.getElementById('datetimeInput').value,
+                datetimeMs: document.getElementById('datetimeMs').innerHTML,
+                datetimeS: document.getElementById('datetimeS').innerHTML
+            };
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {}
+        }
+
+        function restoreState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return;
+
+                const state = JSON.parse(saved);
+
+                if (state.msInput !== undefined) {
+                    document.getElementById('msInput').value = state.msInput;
+                    document.getElementById('msResult').querySelector('.result-value').innerHTML = state.msResult || '-';
+                }
+
+                if (state.sInput !== undefined) {
+                    document.getElementById('sInput').value = state.sInput;
+                    document.getElementById('sResult').querySelector('.result-value').innerHTML = state.sResult || '-';
+                }
+
+                if (state.datetimeInput !== undefined) {
+                    document.getElementById('datetimeInput').value = state.datetimeInput;
+                    document.getElementById('datetimeMs').innerHTML = state.datetimeMs || '-';
+                    document.getElementById('datetimeS').innerHTML = state.datetimeS || '-';
+                }
+            } catch (e) {}
+        }
+
+        restoreState();
+
         // 格式化日期时间
         function formatDatetime(date) {
             const year = date.getFullYear();
@@ -424,6 +468,7 @@
                 }
                 resultBox.dataset.result = formatDatetime(date);
                 resultBox.querySelector('.result-value').innerHTML = `<span class="result-success">${formatDatetime(date)}</span>`;
+                saveState();
             } catch (e) {
                 resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">转换失败：' + e.message + '</span>';
             }
@@ -455,6 +500,7 @@
                 }
                 resultBox.dataset.result = formatDatetime(date);
                 resultBox.querySelector('.result-value').innerHTML = `<span class="result-success">${formatDatetime(date)}</span>`;
+                saveState();
             } catch (e) {
                 resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">转换失败：' + e.message + '</span>';
             }
@@ -497,6 +543,7 @@
 
                 msResult.innerHTML = `<span class="result-success">${ms}</span> <button class="copy-btn" onclick="copyText('${ms}')">复制</button>`;
                 sResult.innerHTML = `<span class="result-success">${s}</span> <button class="copy-btn" onclick="copyText('${s}')">复制</button>`;
+                saveState();
             } catch (e) {
                 msResult.innerHTML = '<span class="result-error">转换失败</span>';
                 sResult.innerHTML = '<span class="result-error">转换失败</span>';

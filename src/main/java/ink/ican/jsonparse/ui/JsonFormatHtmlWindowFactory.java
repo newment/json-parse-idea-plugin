@@ -61,7 +61,7 @@ public class JsonFormatHtmlWindowFactory implements ToolWindowFactory {
             tempDir.deleteOnExit();
 
             // 需要提取的 HTML 文件列表
-            String[] resources = {"index.html","json-format.html", "text-compare.html", "json-escape.html", "sidebar-component.js"};
+            String[] resources = {"index.html","json-format.html", "text-compare.html", "json-escape.html", "sidebar-component.js", "timestamp.html", "base64.html", "url-encode.html"};
 
             for (String resourceName : resources) {
                 String resourcePath = "/" + resourceName;

@@ -372,8 +372,8 @@
             <div class="panel">
                 <div class="panel-title">
                     输出
-                    <span id="infoBar" class="info-bar"
-                          style="display: none; margin-left: 8px; border: none; padding: 0; background: none; font-size: 12px;"></span>
+                    <span id="infoBar"
+                          style="visibility: hidden; margin-left: 8px; font-size: 12px; color: #666;"></span>
                 </div>
                 <button class="btn-copy" onclick="copyOutput()" title="复制结果">📋</button>
                 <div id="outputContainer">
@@ -407,7 +407,63 @@
     </div>
 
     <script>
+        const STORAGE_KEY = 'url_encode_state';
+
         let currentMode = 'encode';
+
+        function saveState() {
+            const state = {
+                input: document.getElementById('urlInput').value,
+                output: document.getElementById('outputContainer').innerHTML,
+                currentMode: currentMode,
+                errorHintVisible: document.getElementById('errorHint').style.display === 'inline',
+                errorHintText: document.getElementById('errorHint').textContent,
+                successHintVisible: document.getElementById('successHint').style.display === 'inline',
+                successHintText: document.getElementById('successHint').textContent,
+                infoBarVisible: document.getElementById('infoBar').style.visibility === 'visible',
+                infoBarContent: document.getElementById('infoBar').innerHTML
+            };
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {}
+        }
+
+        function restoreState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return;
+
+                const state = JSON.parse(saved);
+                document.getElementById('urlInput').value = state.input || '';
+
+                if (state.output) {
+                    document.getElementById('outputContainer').innerHTML = state.output;
+                }
+
+                if (state.currentMode) {
+                    currentMode = state.currentMode;
+                    document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
+                    document.getElementById('tab-' + currentMode).classList.add('active');
+                }
+
+                if (state.errorHintVisible) {
+                    document.getElementById('errorHint').textContent = state.errorHintText;
+                    document.getElementById('errorHint').style.display = 'inline';
+                }
+
+                if (state.successHintVisible) {
+                    document.getElementById('successHint').textContent = state.successHintText;
+                    document.getElementById('successHint').style.display = 'inline';
+                }
+
+                if (state.infoBarVisible) {
+                    document.getElementById('infoBar').style.visibility = 'visible';
+                    document.getElementById('infoBar').innerHTML = state.infoBarContent;
+                }
+            } catch (e) {}
+        }
+
+        restoreState();
 
         function setMode(mode) {
             currentMode = mode;
@@ -438,6 +494,7 @@
             errorHint.style.display = 'none';
             successHint.textContent = message;
             successHint.style.display = 'inline';
+            saveState();
         }
 
         function updateOutput(result, originalLength, resultLength) {
@@ -447,7 +504,7 @@
             outputContainer.innerHTML = `<div style="white-space: pre-wrap; word-break: break-all;">${escapeHtml(result)}</div>`;
 
             if (originalLength !== undefined && resultLength !== undefined) {
-                infoBar.style.display = 'inline';
+                infoBar.style.visibility = 'visible';
                 infoBar.innerHTML = `
                     <span style="color: #666;">原始 ${originalLength} 字符 → 处理后 ${resultLength} 字符</span>
                 `;
@@ -514,9 +571,10 @@
                     <p>请在左侧输入内容<br>选择相应功能按钮进行处理</p>
                 </div>
             `;
-            document.getElementById('infoBar').style.display = 'none';
+            document.getElementById('infoBar').style.visibility = 'hidden';
             document.getElementById('errorHint').style.display = 'none';
             document.getElementById('successHint').style.display = 'none';
+            localStorage.removeItem(STORAGE_KEY);
         }
 
         function copyInput() {

@@ -385,10 +385,11 @@
             <div class="panel">
                 <div class="panel-title">
                     输出
-                    <span id="infoBar" class="info-bar"
-                          style="display: none; margin-left: 8px; border: none; padding: 0; background: none; font-size: 12px;"></span>
+                    <span id="infoBar"
+                          style="visibility: hidden; margin-left: 8px; font-size: 12px; color: #666;"></span>
                 </div>
                 <button class="btn-copy" onclick="copyOutput()" title="复制结果">📋</button>
+                <button id="downloadBtn" class="btn-copy" onclick="downloadImage()" title="下载图片" style="right: 85px; display: none;">⬇️</button>
                 <div id="outputContainer">
                     <div class="empty-state">
                         <div class="empty-state-icon">📦</div>
@@ -417,6 +418,70 @@
     </div>
 
     <script>
+        const STORAGE_KEY = 'base64_state';
+
+        function saveState() {
+            const state = {
+                input: document.getElementById('base64Input').value,
+                output: document.getElementById('outputContainer').innerHTML,
+                currentImageDataUrl: window.currentImageDataUrl || '',
+                infoBarVisible: document.getElementById('infoBar').style.visibility === 'visible',
+                infoBarContent: document.getElementById('infoBar').innerHTML,
+                errorHintVisible: document.getElementById('errorHint').style.display === 'inline',
+                errorHintText: document.getElementById('errorHint').textContent,
+                successHintVisible: document.getElementById('successHint').style.display === 'inline',
+                successHintText: document.getElementById('successHint').textContent,
+                fileName: document.getElementById('fileName').textContent,
+                downloadBtnVisible: document.getElementById('downloadBtn').style.display === 'block'
+            };
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                // localStorage may be full or unavailable
+            }
+        }
+
+        function restoreState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return;
+
+                const state = JSON.parse(saved);
+
+                document.getElementById('base64Input').value = state.input || '';
+
+                if (state.currentImageDataUrl) {
+                    window.currentImageDataUrl = state.currentImageDataUrl;
+                    document.getElementById('outputContainer').innerHTML = state.output || '';
+                    document.getElementById('downloadBtn').style.display = state.downloadBtnVisible ? 'block' : 'none';
+                } else if (state.output) {
+                    document.getElementById('outputContainer').innerHTML = state.output;
+                }
+
+                document.getElementById('fileName').textContent = state.fileName || '';
+
+                if (state.infoBarVisible) {
+                    document.getElementById('infoBar').style.visibility = 'visible';
+                    document.getElementById('infoBar').innerHTML = state.infoBarContent;
+                }
+
+                if (state.errorHintVisible) {
+                    document.getElementById('errorHint').textContent = state.errorHintText;
+                    document.getElementById('errorHint').style.display = 'inline';
+                }
+
+                if (state.successHintVisible) {
+                    document.getElementById('successHint').textContent = state.successHintText;
+                    document.getElementById('successHint').style.display = 'inline';
+                }
+            } catch (e) {
+                // Ignore restore errors
+            }
+        }
+
+        // Restore state on load
+        restoreState();
+
         function showError(message) {
             const errorHint = document.getElementById('errorHint');
             const successHint = document.getElementById('successHint');
@@ -426,7 +491,7 @@
             errorHint.textContent = message;
             errorHint.style.display = 'inline';
             successHint.style.display = 'none';
-            infoBar.style.display = 'none';
+            infoBar.style.visibility = 'hidden';
 
             outputContainer.innerHTML = `
                 <div class="empty-state">
@@ -434,6 +499,9 @@
                     <p>处理失败<br>${escapeHtml(message)}</p>
                 </div>
             `;
+
+            document.getElementById('downloadBtn').style.display = 'none';
+            currentImageDataUrl = '';
         }
 
         function showSuccess(message) {
@@ -450,8 +518,11 @@
 
             outputContainer.innerHTML = `<div style="white-space: pre-wrap; word-break: break-all;">${escapeHtml(result)}</div>`;
 
+            document.getElementById('downloadBtn').style.display = 'none';
+            currentImageDataUrl = '';
+
             if (info) {
-                infoBar.style.display = 'inline';
+                infoBar.style.visibility = 'visible';
                 infoBar.innerHTML = `<span style="color: #666;">${info}</span>`;
             }
         }
@@ -477,6 +548,7 @@
                 const encoded = btoa(unescape(encodeURIComponent(input)));
                 updateOutput(encoded, `原文 ${input.length} 字符 → Base64 ${encoded.length} 字符`);
                 showSuccess('✅ 编码成功！');
+                saveState();
             } catch (e) {
                 showError('编码失败：' + e.message);
             }
@@ -491,12 +563,119 @@
             }
 
             try {
+                // Check if it's a data URL (image etc.)
+                if (input.startsWith('data:image/')) {
+                    displayImage(input);
+                    return;
+                }
+
+                // Try to decode as base64 first
                 const decoded = decodeURIComponent(escape(atob(input)));
+
+                // Check if decoded content looks like binary (contains many non-printable chars)
+                if (looksLikeBinary(decoded)) {
+                    // Try to detect image from binary content
+                    tryDisplayAsImage(decoded);
+                    return;
+                }
+
                 updateOutput(decoded, `Base64 ${input.length} 字符 → 解码 ${decoded.length} 字符`);
                 showSuccess('✅ 解码成功！');
+                saveState();
             } catch (e) {
                 showError('解码失败：无效的Base64字符串');
             }
+        }
+
+        function looksLikeBinary(str) {
+            // Check ratio of non-printable characters
+            let nonPrintable = 0;
+            for (let i = 0; i < Math.min(str.length, 1000); i++) {
+                const code = str.charCodeAt(i);
+                if (code < 32 && code !== 9 && code !== 10 && code !== 13) {
+                    nonPrintable++;
+                }
+            }
+            return str.length > 0 && nonPrintable / str.length > 0.1;
+        }
+
+        function tryDisplayAsImage(binaryData) {
+            // Convert binary string to array buffer
+            const bytes = new Uint8Array(binaryData.length);
+            for (let i = 0; i < binaryData.length; i++) {
+                bytes[i] = binaryData.charCodeAt(i);
+            }
+
+            // Check magic bytes
+            const header = bytes.slice(0, 8);
+
+            // PNG: 89 50 4E 47 0D 0A 1A 0A
+            if (header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4E && header[3] === 0x47) {
+                const base64 = btoa(binaryData);
+                displayImage('data:image/png;base64,' + base64);
+                return;
+            }
+
+            // JPEG: FF D8 FF
+            if (header[0] === 0xFF && header[1] === 0xD8 && header[2] === 0xFF) {
+                const base64 = btoa(binaryData);
+                displayImage('data:image/jpeg;base64,' + base64);
+                return;
+            }
+
+            // GIF: 47 49 46 38 (GIF8)
+            if (header[0] === 0x47 && header[1] === 0x49 && header[2] === 0x46 && header[3] === 0x38) {
+                const base64 = btoa(binaryData);
+                displayImage('data:image/gif;base64,' + base64);
+                return;
+            }
+
+            // WebP: 52 49 46 46 ... 57 45 42 50 (RIFF....WEBP)
+            if (header[0] === 0x52 && header[1] === 0x49 && header[2] === 0x46 && header[3] === 0x46 &&
+                bytes.slice(8, 12).every((b, i) => b === [0x57, 0x45, 0x42, 0x50][i])) {
+                const base64 = btoa(binaryData);
+                displayImage('data:image/webp;base64,' + base64);
+                return;
+            }
+
+            // Not a recognized image format, show as text with warning
+            updateOutput(binaryData, `Base64 解码（二进制数据，无法识别为图片）`);
+            showSuccess('⚠️ 解码成功，但内容非文本且非已知图片格式');
+        }
+
+        let currentImageDataUrl = '';
+
+        function displayImage(dataUrl) {
+            currentImageDataUrl = dataUrl;
+            const outputContainer = document.getElementById('outputContainer');
+            const infoBar = document.getElementById('infoBar');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            outputContainer.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <img src="${dataUrl}" style="max-width: 100%; max-height: 60vh; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);" />
+                </div>
+            `;
+
+            downloadBtn.style.display = 'block';
+            infoBar.style.visibility = 'visible';
+            infoBar.innerHTML = `<span style="color: #666;">🖼️ 图片</span>`;
+            showSuccess('✅ 图片解码成功！');
+        }
+
+        function downloadImage() {
+            if (!currentImageDataUrl) return;
+            const dataUrl = currentImageDataUrl;
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = 'decoded_image_' + Date.now();
+            // Set extension based on mime type
+            if (dataUrl.startsWith('data:image/png')) link.download += '.png';
+            else if (dataUrl.startsWith('data:image/jpeg')) link.download += '.jpg';
+            else if (dataUrl.startsWith('data:image/gif')) link.download += '.gif';
+            else if (dataUrl.startsWith('data:image/webp')) link.download += '.webp';
+            else link.download += '.bin';
+            link.click();
         }
 
         function handleFileSelect(event) {
@@ -511,6 +690,7 @@
                 document.getElementById('base64Input').value = base64;
                 updateOutput(base64, `文件 ${formatFileSize(file.size)}`);
                 showSuccess('✅ 文件已转为Base64！');
+                saveState();
             };
             reader.onerror = function() {
                 showError('文件读取失败');
@@ -532,11 +712,14 @@
                     <p>请在左侧输入内容<br>选择相应功能按钮进行处理</p>
                 </div>
             `;
-            document.getElementById('infoBar').style.display = 'none';
+            document.getElementById('infoBar').style.visibility = 'hidden';
             document.getElementById('errorHint').style.display = 'none';
             document.getElementById('successHint').style.display = 'none';
             document.getElementById('fileName').textContent = '';
             document.getElementById('fileInput').value = '';
+            document.getElementById('downloadBtn').style.display = 'none';
+            currentImageDataUrl = '';
+            localStorage.removeItem(STORAGE_KEY);
         }
 
         function copyInput() {
@@ -555,6 +738,12 @@
         }
 
         function copyOutput() {
+            // If current output is an image, copy the image
+            if (currentImageDataUrl) {
+                copyImageToClipboard(currentImageDataUrl);
+                return;
+            }
+
             const output = document.getElementById('outputContainer').textContent;
 
             if (!output || output.includes('请在左侧输入') || output.includes('处理失败')) {
@@ -569,6 +758,35 @@
             });
         }
 
+        function copyImageToClipboard(dataUrl) {
+            // Convert data URL to Blob
+            const byteString = atob(dataUrl.split(',')[1]);
+            const mimeType = dataUrl.split(',')[0].match(/:(.*?);/)[1];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            const blob = new Blob([ab], { type: mimeType });
+
+            try {
+                const item = new ClipboardItem({ [mimeType]: blob });
+                navigator.clipboard.write([item]).then(() => {
+                    showSuccess('图片已复制到剪贴板');
+                }).catch(err => {
+                    // ClipboardItem not supported in JCEF, offer download instead
+                    if (err.name === 'Error' || err.name === 'NotAllowedError') {
+                        showError('IDE环境下不支持复制图片，请使用下载按钮');
+                    } else {
+                        showError('复制失败：' + err.message);
+                    }
+                });
+            } catch (err) {
+                // ClipboardItem constructor may throw in JCEF
+                showError('IDE环境下不支持复制图片，请使用下载按钮');
+            }
+        }
+
         let debounceTimer;
         document.getElementById('base64Input').addEventListener('input', function () {
             clearTimeout(debounceTimer);
@@ -576,19 +794,26 @@
                 const input = document.getElementById('base64Input').value.trim();
                 if (!input) return;
 
-                // Auto-detect: if valid base64 and not valid UTF-8 text, try decode
-                // Otherwise try encode
+                // Auto-detect: data URL (image) or base64
+                if (input.startsWith('data:image/')) {
+                    decodeBase64();
+                    saveState();
+                    return;
+                }
+
                 try {
                     // Check if it looks like base64
                     if (/^[A-Za-z0-9+/]+=*$/.test(input) && input.length % 4 === 0) {
                         try {
                             decodeBase64();
+                            saveState();
                             return;
                         } catch (e) {
                             // Not valid base64, try encode
                         }
                     }
                     encodeBase64();
+                    saveState();
                 } catch (e) {
                     // Invalid input, do nothing
                 }
