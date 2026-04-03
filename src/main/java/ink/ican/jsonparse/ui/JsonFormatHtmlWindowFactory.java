@@ -61,7 +61,7 @@ public class JsonFormatHtmlWindowFactory implements ToolWindowFactory {
             tempDir.deleteOnExit();
 
             // List of HTML files to extract
-            String[] resources = {"index.html","json-format.html", "text-compare.html", "json-escape.html", "sidebar-component.js", "timestamp.html", "base64.html", "url-encode.html"};
+            String[] resources = {"index.html","json-format.html", "text-compare.html", "json-escape.html", "sidebar-component.js", "timestamp.html", "base64.html", "url-encode.html", "keyboard-fix.js"};
 
             for (String resourceName : resources) {
                 String resourcePath = "/" + resourceName;
