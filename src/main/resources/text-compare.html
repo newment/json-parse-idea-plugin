@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文字对比</title>
+    <title>Text Compare</title>
     <link rel="icon" href="assets/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -358,24 +358,24 @@
     <div class="container">
         <div class="panel-wrapper">
             <div class="panel panel-left">
-                <div class="panel-title">原文</div>
-                <button class="btn-clear" onclick="clearText('original')" title="清空">✕</button>
-                <button class="btn-copy" onclick="copyText('original')" title="复制">📋</button>
+                <div class="panel-title">Original</div>
+                <button class="btn-clear" onclick="clearText('original')" title="Clear">✕</button>
+                <button class="btn-copy" onclick="copyText('original')" title="Copy">📋</button>
                 <textarea 
                     id="originalText" 
                     class="text-input"
-                    placeholder="请输入原文..."
+                    placeholder="Please enter original text..."
                 ></textarea>
             </div>
 
             <div class="panel">
-                <div class="panel-title">对比文本</div>
-                <button class="btn-clear" onclick="clearText('modified')" title="清空">✕</button>
-                <button class="btn-copy" onclick="copyText('modified')" title="复制">📋</button>
+                <div class="panel-title">Modified</div>
+                <button class="btn-clear" onclick="clearText('modified')" title="Clear">✕</button>
+                <button class="btn-copy" onclick="copyText('modified')" title="Copy">📋</button>
                 <textarea 
                     id="modifiedText" 
                     class="text-input"
-                    placeholder="请输入对比文本..."
+                    placeholder="Please enter modified text..."
                 ></textarea>
             </div>
         </div>
@@ -383,41 +383,41 @@
         <div style="padding: 12px; border-top: 1px solid #e0e0e0; flex-shrink: 0;">
             <div class="button-group">
                 <button class="btn btn-primary" onclick="compareTexts()">
-                    <span>🔍</span> 对比文本
+                    <span>🔍</span> Compare Text
                 </button>
                 <button class="btn btn-secondary" onclick="swapTexts()">
-                    <span>⇄</span> 交换文本
+                    <span>⇄</span> Swap Text
                 </button>
                 <button class="btn btn-danger" onclick="clearAllTexts()">
-                    <span>🗑️</span> 清空全部
+                    <span>🗑️</span> Clear All
                 </button>
             </div>
 
             <div class="options-bar">
                 <label class="option-label">
                     <input type="checkbox" id="ignoreSpaces" checked>
-                    忽略空格差异
+                    Ignore space differences
                 </label>
                 <label class="option-label">
                     <input type="checkbox" id="ignoreCase">
-                    忽略大小写
+                    Ignore case
                 </label>
                 <label class="option-label">
                     <input type="checkbox" id="showLineNumbers" checked>
-                    显示行号
+                    Show line numbers
                 </label>
             </div>
         </div>
 
         <div style="padding: 12px; border-top: 1px solid #e0e0e0; flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 150px;">
             <div class="panel-title" style="justify-content: flex-start;">
-                <span>对比结果</span>
-                <button class="btn-copy" onclick="copyResult()" title="复制结果" style="position: static; margin-left: 8px;">📋</button>
+                <span>Comparison Result</span>
+                <button class="btn-copy" onclick="copyResult()" title="Copy result" style="position: static; margin-left: 8px;">📋</button>
             </div>
             <div id="outputContainer" style="flex: 1; overflow: auto;">
                 <div class="empty-state">
                     <div class="empty-state-icon">📋</div>
-                    <p>请在上下方输入文本后点击"对比文本"按钮</p>
+                    <p>Please enter text above and below, then click "Compare Text" button</p>
                 </div>
             </div>
             <div id="statsContainer" class="stats-summary" style="display: none; flex-shrink: 0;"></div>
@@ -532,7 +532,7 @@
             const statsContainer = document.getElementById('statsContainer');
 
             if (!originalText.trim() && !modifiedText.trim()) {
-                alert('请至少输入一段文本进行对比');
+                alert('Please enter at least one text to compare');
                 return;
             }
 
@@ -576,25 +576,25 @@
                 }
             });
 
-            outputContainer.innerHTML = `<div style="white-space: pre-wrap;">${html || '<span style="color: #999;">两段文本完全相同</span>'}</div>`;
+            outputContainer.innerHTML = `<div style="white-space: pre-wrap;">${html || '<span style="color: #999;">Two texts are identical</span>'}</div>`;
 
             statsContainer.style.display = 'flex';
             statsContainer.innerHTML = `
                 <div class="summary-item">
                     <span class="summary-dot added"></span>
-                    <span>新增: <strong class="stat-added">${comparisonStats.added}</strong> 行</span>
+                    <span>Added: <strong class="stat-added">${comparisonStats.added}</strong> lines</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-dot removed"></span>
-                    <span>删除: <strong class="stat-removed">${comparisonStats.removed}</strong> 行</span>
+                    <span>Removed: <strong class="stat-removed">${comparisonStats.removed}</strong> lines</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-dot unchanged"></span>
-                    <span>未变: <strong>${comparisonStats.unchanged}</strong> 行</span>
+                    <span>Unchanged: <strong>${comparisonStats.unchanged}</strong> lines</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-dot modified"></span>
-                    <span>总行数: <strong>${modifiedLines.length}</strong></span>
+                    <span>Total: <strong>${modifiedLines.length}</strong></span>
                 </div>
             `;
             saveState();
@@ -621,7 +621,7 @@
             document.getElementById('outputContainer').innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">📋</div>
-                    <p>请在上下方输入文本后点击"对比文本"按钮</p>
+                    <p>Please enter text above and below, then click "Compare Text" button</p>
                 </div>
             `;
             document.getElementById('statsContainer').style.display = 'none';
@@ -634,14 +634,14 @@
                 : document.getElementById('modifiedText').value;
             
             if (!text) {
-                alert('没有可复制的内容');
+                alert('No content to copy');
                 return;
             }
             
             navigator.clipboard.writeText(text).then(() => {
-                alert('已复制到剪贴板');
+                alert('Copied to clipboard');
             }).catch(err => {
-                alert('复制失败: ' + err.message);
+                alert('Copy failed: ' + err.message);
             });
         }
 
@@ -649,15 +649,15 @@
             const outputContainer = document.getElementById('outputContainer');
             const text = outputContainer.innerText;
             
-            if (!text || text.includes('请在上下方输入文本')) {
-                alert('没有可复制的结果');
+            if (!text || text.includes('Please enter text above')) {
+                alert('No result to copy');
                 return;
             }
             
             navigator.clipboard.writeText(text).then(() => {
-                alert('结果已复制到剪贴板');
+                alert('Result copied to clipboard');
             }).catch(err => {
-                alert('复制失败: ' + err.message);
+                alert('Copy failed: ' + err.message);
             });
         }
 

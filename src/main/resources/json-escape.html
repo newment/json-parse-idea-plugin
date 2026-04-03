@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON转义</title>
+    <title>JSON Escape</title>
     <link rel="icon" href="assets/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -328,32 +328,32 @@
         <div class="panel-wrapper">
             <div class="panel panel-left">
                 <div class="panel-title">
-                    输入
+                    Input
                     <span id="errorHint"
                           style="color: #EA5455; font-size: 12px; font-weight: normal; margin-left: 8px; display: none;"></span>
                     <span id="successHint"
                           style="color: #4caf50; font-size: 12px; font-weight: normal; margin-left: 8px; display: none;"></span>
                 </div>
-                <button class="btn-clear" onclick="clearInput()" title="清空">✕</button>
-                <button class="btn-copy" onclick="copyInput()" title="复制">📋</button>
+                <button class="btn-clear" onclick="clearInput()" title="Clear">✕</button>
+                <button class="btn-copy" onclick="copyInput()" title="Copy">📋</button>
                 <textarea
                         id="jsonInput"
                         class="text-input"
-                        placeholder="请输入JSON文本或普通文本..."
+                        placeholder="Please enter JSON or plain text..."
                 ></textarea>
             </div>
 
             <div class="panel">
                 <div class="panel-title">
-                    输出
+                    Output
                     <span id="infoBar"
                           style="visibility: hidden; margin-left: 8px; font-size: 12px; color: #666;"></span>
                 </div>
-                <button class="btn-copy" onclick="copyOutput()" title="复制结果">📋</button>
+                <button class="btn-copy" onclick="copyOutput()" title="Copy result">📋</button>
                 <div id="outputContainer">
                     <div class="empty-state">
                         <div class="empty-state-icon">📦</div>
-                        <p>请在左侧输入内容<br>选择相应功能按钮进行处理</p>
+                        <p>Please enter content on the left<br>and select an action button to process</p>
                     </div>
                 </div>
             </div>
@@ -362,16 +362,16 @@
         <div style="padding: 12px; border-top: 1px solid #e0e0e0; flex-shrink: 0;">
             <div class="button-group">
                 <button class="btn btn-primary" onclick="compressJSON()">
-                    <span>📦</span> 压缩JSON
+                    <span>📦</span> Compress JSON
                 </button>
                 <button class="btn btn-success" onclick="escapeJSON()">
-                    <span>🔒</span> 转义文本
+                    <span>🔒</span> Escape Text
                 </button>
                 <button class="btn btn-secondary" onclick="unescapeJSON()">
-                    <span>🔓</span> 去转义
+                    <span>🔓</span> Unescape
                 </button>
                 <button class="btn btn-danger" onclick="swapAndProcess()">
-                    <span>⇄</span> 交换并处理
+                    <span>⇄</span> Swap & Process
                 </button>
             </div>
         </div>
@@ -443,7 +443,7 @@
             outputContainer.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">⚠️</div>
-                    <p>处理失败<br>${escapeHtml(message)}</p>
+                    <p>Processing failed<br>${escapeHtml(message)}</p>
                 </div>
             `;
         }
@@ -468,7 +468,7 @@
                 const percent = originalLength > 0 ? ((reduction / originalLength) * 100).toFixed(1) : 0;
 
                 infoBar.style.visibility = 'visible';
-                infoBar.textContent = `原始 ${originalLength} → 处理后 ${resultLength} | 减少 ${reduction} 字符 (${percent}%)`;
+                infoBar.textContent = `Original ${originalLength} → Processed ${resultLength} | Reduced ${reduction} chars (${percent}%)`;
             }
         }
 
@@ -481,7 +481,7 @@
             successHint.style.display = 'none';
 
             if (!input.trim()) {
-                showError('请输入JSON数据');
+                showError('Please enter JSON data');
                 return;
             }
 
@@ -490,11 +490,11 @@
                 const compressed = JSON.stringify(parsed);
 
                 updateOutput(compressed, input.length, compressed.length);
-                successHint.textContent = '✅ JSON压缩成功！';
+                successHint.textContent = '✅ JSON compressed successfully!';
                 successHint.style.display = 'inline';
                 saveState();
             } catch (e) {
-                showError('JSON格式错误：' + e.message);
+                showError('JSON format error: ' + e.message);
             }
         }
 
@@ -507,7 +507,7 @@
             successHint.style.display = 'none';
 
             if (!input.trim()) {
-                showError('请输入需要转义的文本');
+                showError('Please enter text to escape');
                 return;
             }
 
@@ -516,11 +516,11 @@
                 const result = escaped.slice(1, -1);
 
                 updateOutput(result, input.length, result.length);
-                successHint.textContent = '✅ 文本转义成功！';
+                successHint.textContent = '✅ Text escaped successfully!';
                 successHint.style.display = 'inline';
                 saveState();
             } catch (e) {
-                showError('转义失败：' + e.message);
+                showError('Escape failed: ' + e.message);
             }
         }
 
@@ -533,7 +533,7 @@
             successHint.style.display = 'none';
 
             if (!input.trim()) {
-                showError('请输入需要去转义的字符串');
+                showError('Please enter string to unescape');
                 return;
             }
 
@@ -542,11 +542,11 @@
                 const unescaped = JSON.parse(wrapped);
 
                 updateOutput(unescaped, input.length, unescaped.length);
-                successHint.textContent = '✅ 去转义成功！';
+                successHint.textContent = '✅ Unescaped successfully!';
                 successHint.style.display = 'inline';
                 saveState();
             } catch (e) {
-                showError('去转义失败：' + e.message);
+                showError('Unescape failed: ' + e.message);
             }
         }
 
@@ -554,7 +554,7 @@
             const input = document.getElementById('jsonInput').value;
             const output = document.getElementById('outputContainer').textContent;
 
-            if (output && !output.includes('请在左侧输入') && !output.includes('处理失败')) {
+            if (output && !output.includes('Please enter on the left') && !output.includes('Processing failed')) {
                 document.getElementById('jsonInput').value = output;
 
                 const infoBar = document.getElementById('infoBar');
@@ -564,7 +564,7 @@
                     unescapeJSON();
                 }
             } else {
-                showError('没有可交换的输出内容');
+                showError('No output content to swap');
             }
         }
 
@@ -573,7 +573,7 @@
             document.getElementById('outputContainer').innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">📦</div>
-                    <p>请在左侧输入内容<br>选择相应功能按钮进行处理</p>
+                    <p>Please enter content on the left<br>and select an action button to process</p>
                 </div>
             `;
             document.getElementById('infoBar').style.display = 'none';
@@ -586,29 +586,29 @@
             const text = document.getElementById('jsonInput').value;
 
             if (!text) {
-                showError('没有可复制的内容');
+                showError('Nothing to copy');
                 return;
             }
 
             navigator.clipboard.writeText(text).then(() => {
-                showSuccess('已复制到剪贴板');
+                showSuccess('Copied to clipboard');
             }).catch(err => {
-                showError('复制失败：' + err.message);
+                showError('Copy failed: ' + err.message);
             });
         }
 
         function copyOutput() {
             const output = document.getElementById('outputContainer').textContent;
 
-            if (!output || output.includes('请在左侧输入') || output.includes('处理失败')) {
-                showError('没有可复制的结果');
+            if (!output || output.includes('Please enter on the left') || output.includes('Processing failed')) {
+                showError('No result to copy');
                 return;
             }
 
             navigator.clipboard.writeText(output).then(() => {
-                showSuccess('结果已复制到剪贴板');
+                showSuccess('Result copied to clipboard');
             }).catch(err => {
-                showError('复制失败：' + err.message);
+                showError('Copy failed: ' + err.message);
             });
         }
 

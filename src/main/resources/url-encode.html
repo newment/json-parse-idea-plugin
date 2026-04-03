@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URL编解码</title>
+    <title>URL Encode/Decode</title>
     <link rel="icon" href="assets/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -354,32 +354,32 @@
         <div class="panel-wrapper">
             <div class="panel panel-left">
                 <div class="panel-title">
-                    输入
+                    Input
                     <span id="errorHint"
                           style="color: #EA5455; font-size: 12px; font-weight: normal; margin-left: 8px; display: none;"></span>
                     <span id="successHint"
                           style="color: #4caf50; font-size: 12px; font-weight: normal; margin-left: 8px; display: none;"></span>
                 </div>
-                <button class="btn-clear" onclick="clearInput()" title="清空">✕</button>
-                <button class="btn-copy" onclick="copyInput()" title="复制">📋</button>
+                <button class="btn-clear" onclick="clearInput()" title="Clear">✕</button>
+                <button class="btn-copy" onclick="copyInput()" title="Copy">📋</button>
                 <textarea
                         id="urlInput"
                         class="text-input"
-                        placeholder="请输入需要编解码的URL或文本..."
+                        placeholder="Please enter URL or text to encode/decode..."
                 ></textarea>
             </div>
 
             <div class="panel">
                 <div class="panel-title">
-                    输出
+                    Output
                     <span id="infoBar"
                           style="visibility: hidden; margin-left: 8px; font-size: 12px; color: #666;"></span>
                 </div>
-                <button class="btn-copy" onclick="copyOutput()" title="复制结果">📋</button>
+                <button class="btn-copy" onclick="copyOutput()" title="Copy result">📋</button>
                 <div id="outputContainer">
                     <div class="empty-state">
                         <div class="empty-state-icon">🔗</div>
-                        <p>请在左侧输入内容<br>选择相应功能按钮进行处理</p>
+                        <p>Please enter content on the left<br>and select an action button to process</p>
                     </div>
                 </div>
             </div>
@@ -387,20 +387,20 @@
 
         <div style="padding: 12px; border-top: 1px solid #e0e0e0; flex-shrink: 0;">
             <div class="mode-tabs">
-                <button class="mode-tab active" onclick="setMode('encode')" id="tab-encode">URL编码</button>
-                <button class="mode-tab" onclick="setMode('decode')" id="tab-decode">URL解码</button>
-                <button class="mode-tab" onclick="setMode('component')" id="tab-component">组件编码</button>
-                <button class="mode-tab" onclick="setMode('full')" id="tab-full">完整编码</button>
+                <button class="mode-tab active" onclick="setMode('encode')" id="tab-encode">URL Encode</button>
+                <button class="mode-tab" onclick="setMode('decode')" id="tab-decode">URL Decode</button>
+                <button class="mode-tab" onclick="setMode('component')" id="tab-component">Component Encode</button>
+                <button class="mode-tab" onclick="setMode('full')" id="tab-full">Full Encode</button>
             </div>
             <div class="button-group">
                 <button class="btn btn-primary" onclick="processURL()">
-                    <span>⚡</span> 转换
+                    <span>⚡</span> Convert
                 </button>
                 <button class="btn btn-success" onclick="copyOutput()">
-                    <span>📋</span> 复制结果
+                    <span>📋</span> Copy result
                 </button>
                 <button class="btn btn-danger" onclick="clearInput()">
-                    <span>🗑️</span> 清空
+                    <span>🗑️</span> Clear
                 </button>
             </div>
         </div>
@@ -483,7 +483,7 @@
             outputContainer.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">⚠️</div>
-                    <p>处理失败<br>${escapeHtml(message)}</p>
+                    <p>Processing failed<br>${escapeHtml(message)}</p>
                 </div>
             `;
         }
@@ -506,7 +506,7 @@
             if (originalLength !== undefined && resultLength !== undefined) {
                 infoBar.style.visibility = 'visible';
                 infoBar.innerHTML = `
-                    <span style="color: #666;">原始 ${originalLength} 字符 → 处理后 ${resultLength} 字符</span>
+                    <span style="color: #666;">Original ${originalLength} chars → Processed ${resultLength} chars</span>
                 `;
             }
         }
@@ -535,7 +535,7 @@
             successHint.style.display = 'none';
 
             if (!input.trim()) {
-                showError('请输入需要处理的内容');
+                showError('Please enter content to process');
                 return;
             }
 
@@ -557,9 +557,9 @@
                 }
 
                 updateOutput(result, input.length, result.length);
-                showSuccess('✅ 转换成功！');
+                showSuccess('✅ Converted successfully!');
             } catch (e) {
-                showError('转换失败：' + e.message);
+                showError('Conversion failed: ' + e.message);
             }
         }
 
@@ -568,7 +568,7 @@
             document.getElementById('outputContainer').innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">🔗</div>
-                    <p>请在左侧输入内容<br>选择相应功能按钮进行处理</p>
+                    <p>Please enter content on the left<br>and select an action button to process</p>
                 </div>
             `;
             document.getElementById('infoBar').style.visibility = 'hidden';
@@ -581,29 +581,29 @@
             const text = document.getElementById('urlInput').value;
 
             if (!text) {
-                showError('没有可复制的内容');
+                showError('Nothing to copy');
                 return;
             }
 
             navigator.clipboard.writeText(text).then(() => {
-                showSuccess('已复制到剪贴板');
+                showSuccess('Copied to clipboard');
             }).catch(err => {
-                showError('复制失败：' + err.message);
+                showError('Copy failed: ' + err.message);
             });
         }
 
         function copyOutput() {
             const output = document.getElementById('outputContainer').textContent;
 
-            if (!output || output.includes('请在左侧输入') || output.includes('处理失败')) {
-                showError('没有可复制的结果');
+            if (!output || output.includes('Please enter on the left') || output.includes('Processing failed')) {
+                showError('No result to copy');
                 return;
             }
 
             navigator.clipboard.writeText(output).then(() => {
-                showSuccess('结果已复制到剪贴板');
+                showSuccess('Result copied to clipboard');
             }).catch(err => {
-                showError('复制失败：' + err.message);
+                showError('Copy failed: ' + err.message);
             });
         }
 

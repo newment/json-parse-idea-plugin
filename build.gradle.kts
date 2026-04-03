@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "ink.ican"
-version = "1.1.0"
+version = "1.1.2"
 
 repositories {
     mavenCentral()
@@ -29,11 +29,8 @@ intellijPlatform {
         ideaVersion {
             sinceBuild = "251"
         }
-
         changeNotes = """
-      1.修改样式
-      2.完善折叠展开功能
-      3.增加新功能
+        Complete internationalization
     """.trimIndent()
     }
 }

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON 解析器</title>
+    <title>JSON Parser</title>
     <link rel="icon" href="assets/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -314,27 +314,27 @@
         <div class="panel-wrapper">
             <div class="panel panel-left">
                 <div class="panel-title">
-                    JSON 输入
+                    JSON Input
                     <span id="errorHint" style="color: #EA5455; font-size: 12px; font-weight: normal; margin-left: 8px; display: none;"></span>
                 </div>
-                <button class="btn-clear" onclick="clearAll()" title="清空">✕</button>
-                <button class="btn-copy" onclick="copyJSON()" title="复制">📋</button>
+                <button class="btn-clear" onclick="clearAll()" title="Clear">✕</button>
+                <button class="btn-copy" onclick="copyJSON()" title="Copy">📋</button>
                 <textarea 
                     id="jsonInput" 
-                    placeholder='请输入JSON数据...'
+                    placeholder='Please enter JSON data...'
                 ></textarea>
             </div>
 
             <div class="panel">
                 <div class="panel-title">
-                    解析结果
+                    Parsed Result
                     <span id="successHint" style="color: #4caf50; font-size: 12px; font-weight: normal; margin-left: 8px; display: none;"></span>
                 </div>
-                <button class="btn-copy" onclick="copyJSON()" title="复制">📋</button>
+                <button class="btn-copy" onclick="copyJSON()" title="Copy">📋</button>
                 <div id="outputContainer">
                     <div class="empty-state">
                         <div class="empty-state-icon">📋</div>
-                        <p>请在左侧输入 JSON数据</p>
+                        <p>Please enter JSON data on the left</p>
                     </div>
                 </div>
             </div>
@@ -523,7 +523,7 @@
             nodeIdCounter = 0;
 
             if (!input) {
-                showError('请输入 JSON数据');
+                showError('Please enter JSON data');
                 return;
             }
 
@@ -531,15 +531,15 @@
                 const parsed = JSON.parse(input);
                 parsedJSONData = parsed;
                 renderJSON(parsed);
-                successHint.textContent = `✅ 解析成功！数据类型：${getType(parsed) === 'array' ? '数组' : '对象'}`;
+                successHint.textContent = `✅ Parsed successfully! Data type: ${getType(parsed) === 'array' ? 'Array' : 'Object'}`;
                 successHint.style.display = 'inline';
                 saveState();
             } catch (e) {
-                showError(`❌ JSON 格式错误：${e.message}`);
+                showError(`❌ JSON format error: ${e.message}`);
                 outputContainer.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">⚠️</div>
-                        <p>无法解析输入的JSON<br>请检查格式是否正确</p>
+                        <p>Failed to parse the input JSON<br>Please check if the format is correct</p>
                     </div>
                 `;
             }
@@ -572,7 +572,7 @@
 
         function copyJSON() {
             if (!parsedJSONData) {
-                showError('没有可复制的 JSON 数据');
+                showError('No JSON data to copy');
                 return;
             }
             
@@ -580,13 +580,13 @@
             
             navigator.clipboard.writeText(formattedJSON).then(() => {
                 const successHint = document.getElementById('successHint');
-                successHint.textContent = '✅ 已复制到剪贴板';
+                successHint.textContent = '✅ Copied to clipboard';
                 successHint.style.display = 'inline';
                 setTimeout(() => {
                     successHint.style.display = 'none';
                 }, 2000);
             }).catch(err => {
-                showError('复制失败: ' + err.message);
+                showError('Copy failed: ' + err.message);
             });
         }
 
@@ -595,7 +595,7 @@
             document.getElementById('outputContainer').innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">📋</div>
-                    <p>请在左侧输入 JSON数据<br>点击"解析 JSON"按钮查看结果</p>
+                    <p>Please enter JSON data on the left<br>Click "Parse JSON" button to view result</p>
                 </div>
             `;
             document.getElementById('errorHint').style.display = 'none';

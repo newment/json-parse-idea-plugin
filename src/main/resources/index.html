@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON 工具集</title>
+    <title>JSON Tools</title>
     <link rel="icon" href="assets/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -178,27 +178,27 @@
 <body>
     <div class="sidebar">
         <div class="sidebar-item">
-            <div class="sidebar-header">工具集</div>
+            <div class="sidebar-header">Tools</div>
             <nav class="sidebar-nav">
                 <a class="sidebar-link active" data-page="json-format" onclick="navigateTo('json-format.html')">
                     <span class="icon">📋</span>
-                    <span class="link-text">JSON格式化</span>
+                    <span class="link-text">JSON Format</span>
                 </a>
                 <a class="sidebar-link" data-page="text-compare" onclick="navigateTo('text-compare.html')">
                     <span class="icon">⚖️</span>
-                    <span class="link-text">文字对比</span>
+                    <span class="link-text">Text Compare</span>
                 </a>
                 <a class="sidebar-link" data-page="json-escape" onclick="navigateTo('json-escape.html')">
                     <span class="icon">🔣</span>
-                    <span class="link-text">JSON转义</span>
+                    <span class="link-text">JSON Escape</span>
                 </a>
                 <a class="sidebar-link" data-page="timestamp" onclick="navigateTo('timestamp.html')">
                     <span class="icon">🕐</span>
-                    <span class="link-text">时间戳转换</span>
+                    <span class="link-text">Timestamp</span>
                 </a>
                 <a class="sidebar-link" data-page="url-encode" onclick="navigateTo('url-encode.html')">
                     <span class="icon">🔗</span>
-                    <span class="link-text">URL编解码</span>
+                    <span class="link-text">URL Encode/Decode</span>
                 </a>
                 <a class="sidebar-link" data-page="base64" onclick="navigateTo('base64.html')">
                     <span class="icon">📦</span>
@@ -210,8 +210,8 @@
 
     <div class="main-container">
         <div class="iframe-header">
-            <h1 id="pageTitle">🔍 JSON 解析器</h1>
-            <p id="pageDesc">JSON 格式化与解析工具</p>
+            <h1 id="pageTitle">🔍 JSON Parser</h1>
+            <p id="pageDesc">JSON formatting and parsing tool</p>
         </div>
         <div class="iframe-wrapper">
             <iframe id="contentFrame" src="json-format.html"></iframe>
@@ -221,28 +221,28 @@
     <script>
         const pageInfo = {
             'json-format': {
-                title: '🔍 JSON 解析器',
-                desc: 'JSON 格式化与解析工具'
+                title: '🔍 JSON Parser',
+                desc: 'JSON formatting and parsing tool'
             },
             'text-compare': {
-                title: '⚖️ 文字对比',
-                desc: '文本差异对比工具'
+                title: '⚖️ Text Compare',
+                desc: 'Text difference comparison tool'
             },
             'json-escape': {
-                title: '🔣 JSON转义与压缩',
-                desc: 'JSON 转义、去转义与压缩工具'
+                title: '🔣 JSON Escape & Compress',
+                desc: 'JSON escape, unescape and compress tool'
             },
             'timestamp': {
-                title: '🕐 时间戳转换',
-                desc: '毫秒/秒时间戳与日期时间互转'
+                title: '🕐 Timestamp Converter',
+                desc: 'Convert between ms/s timestamps and datetime'
             },
             'url-encode': {
-                title: '🔗 URL编解码',
-                desc: 'URL组件编码、全编码与解码'
+                title: '🔗 URL Encode/Decode',
+                desc: 'URL component encode, full encode and decode'
             },
             'base64': {
-                title: '📦 Base64编解码',
-                desc: '文本与Base64字符串互转，支持文件'
+                title: '📦 Base64 Encoder/Decoder',
+                desc: 'Convert between text and Base64, supports files'
             }
         };
 

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>时间戳转换</title>
+    <title>Timestamp Converter</title>
     <link rel="icon" href="assets/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -280,75 +280,75 @@
 <body>
     <div class="container">
         <div class="current-time">
-            <div class="label">当前时间</div>
+            <div class="label">Current Time</div>
             <div class="datetime-value" id="currentDatetime">-</div>
             <div class="copy-btns">
-                <button class="btn-copy-timestamp" onclick="copyCurrentMs()">复制毫秒</button>
-                <button class="btn-copy-timestamp" onclick="copyCurrentS()">复制秒</button>
+                <button class="btn-copy-timestamp" onclick="copyCurrentMs()">Copy ms</button>
+                <button class="btn-copy-timestamp" onclick="copyCurrentS()">Copy s</button>
             </div>
         </div>
 
         <div class="converter-grid">
             <div class="card converter-section">
-                <div class="card-title">时间戳 → 日期时间</div>
+                <div class="card-title">Timestamp → DateTime</div>
 
                 <div class="input-group">
-                    <div class="input-label">时间戳（毫秒）</div>
+                    <div class="input-label">Timestamp (ms)</div>
                     <div class="input-row">
-                        <input type="text" id="msInput" placeholder="输入毫秒时间戳，如：1743206400000">
-                        <button class="btn btn-primary" onclick="msToDatetime()">转换</button>
+                        <input type="text" id="msInput" placeholder="Enter ms timestamp, e.g.: 1743206400000">
+                        <button class="btn btn-primary" onclick="msToDatetime()">Convert</button>
                     </div>
                     <div class="quick-btns">
-                        <button class="btn-quick" onclick="fillCurrentMs()">使用当前时间</button>
-                        <button class="btn-quick" onclick="fillMsFromOutput()">使用上方结果</button>
+                        <button class="btn-quick" onclick="fillCurrentMs()">Use current time</button>
+                        <button class="btn-quick" onclick="fillMsFromOutput()">Use result above</button>
                     </div>
                 </div>
 
                 <div class="result-box" id="msResult">
-                    <div class="result-label">转换结果</div>
+                    <div class="result-label">Conversion result</div>
                     <div class="result-value">-</div>
                 </div>
 
                 <div class="input-group">
-                    <div class="input-label">时间戳（秒）</div>
+                    <div class="input-label">Timestamp (s)</div>
                     <div class="input-row">
-                        <input type="text" id="sInput" placeholder="输入秒时间戳，如：1743206400">
-                        <button class="btn btn-primary" onclick="sToDatetime()">转换</button>
+                        <input type="text" id="sInput" placeholder="Enter s timestamp, e.g.: 1743206400">
+                        <button class="btn btn-primary" onclick="sToDatetime()">Convert</button>
                     </div>
                     <div class="quick-btns">
-                        <button class="btn-quick" onclick="fillCurrentS()">使用当前时间</button>
-                        <button class="btn-quick" onclick="fillSFromOutput()">使用上方结果</button>
+                        <button class="btn-quick" onclick="fillCurrentS()">Use current time</button>
+                        <button class="btn-quick" onclick="fillSFromOutput()">Use result above</button>
                     </div>
                 </div>
 
                 <div class="result-box" id="sResult">
-                    <div class="result-label">转换结果</div>
+                    <div class="result-label">Conversion result</div>
                     <div class="result-value">-</div>
                 </div>
             </div>
 
             <div class="card converter-section">
-                <div class="card-title">日期时间 → 时间戳</div>
+                <div class="card-title">DateTime → Timestamp</div>
 
                 <div class="input-group">
-                    <div class="input-label">日期时间字符串</div>
+                    <div class="input-label">DateTime string</div>
                     <div class="input-row">
-                        <input type="text" id="datetimeInput" placeholder="输入日期时间，如：2025-03-29 08:00:00">
-                        <button class="btn btn-primary" onclick="datetimeToTimestamp()">转换</button>
+                        <input type="text" id="datetimeInput" placeholder="Enter DateTime, e.g.: 2025-03-29 08:00:00">
+                        <button class="btn btn-primary" onclick="datetimeToTimestamp()">Convert</button>
                     </div>
                     <div class="quick-btns">
-                        <button class="btn-quick" onclick="fillCurrentDatetime()">使用当前时间</button>
+                        <button class="btn-quick" onclick="fillCurrentDatetime()">Use current time</button>
                     </div>
-                    <div class="info-text">支持的格式：2025-03-29 08:00:00、2025/03/29 08:00:00、2025-03-29T08:00:00+08:00</div>
+                    <div class="info-text">Supported formats: 2025-03-29 08:00:00, 2025/03/29 08:00:00, 2025-03-29T08:00:00+08:00</div>
                 </div>
 
                 <div class="result-box" id="datetimeResult">
-                    <div class="result-label">毫秒时间戳</div>
+                    <div class="result-label">Ms timestamp</div>
                     <div class="result-value" id="datetimeMs">-</div>
                 </div>
 
                 <div class="result-box" id="datetimeResultS">
-                    <div class="result-label">秒时间戳</div>
+                    <div class="result-label">S timestamp</div>
                     <div class="result-value" id="datetimeS">-</div>
                 </div>
             </div>
@@ -400,7 +400,7 @@
 
         restoreState();
 
-        // 格式化日期时间
+        // Format DateTime
         function formatDatetime(date) {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -422,135 +422,135 @@
             return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
         }
 
-        // 更新当前时间
+        // Update current time
         function updateCurrentTime() {
             const date = new Date();
             document.getElementById('currentDatetime').textContent = formatDatetimeNoMs(date);
         }
 
-        // 初始化当前时间
+        // Initialize current time
         updateCurrentTime();
         setInterval(updateCurrentTime, 1000);
 
-        // 复制当前毫秒时间戳
+        // Copy current ms timestamp
         function copyCurrentMs() {
             copyText(Date.now());
         }
 
-        // 复制当前秒时间戳
+        // Copy current s timestamp
         function copyCurrentS() {
             copyText(Math.floor(Date.now() / 1000));
         }
 
-        // 毫秒时间戳转日期时间
+        // Ms timestamp to DateTime
         function msToDatetime() {
             const input = document.getElementById('msInput').value.trim();
             const resultBox = document.getElementById('msResult');
 
             if (!input) {
-                resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">请输入时间戳</span>';
+                resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">Please enter timestamp</span>';
                 return;
             }
 
             const ms = parseInt(input);
             if (isNaN(ms)) {
-                resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">请输入有效的数字</span>';
+                resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">Please enter a valid number</span>';
                 return;
             }
 
-            // 如果输入的是10位数(秒)，自动转换为毫秒
+            // If input is 10 digits (seconds), convert to milliseconds
             const timestamp = ms < 10000000000 ? ms * 1000 : ms;
 
             try {
                 const date = new Date(timestamp);
                 if (isNaN(date.getTime())) {
-                    throw new Error('无效日期');
+                    throw new Error('Invalid date');
                 }
                 resultBox.dataset.result = formatDatetime(date);
                 resultBox.querySelector('.result-value').innerHTML = `<span class="result-success">${formatDatetime(date)}</span>`;
                 saveState();
             } catch (e) {
-                resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">转换失败：' + e.message + '</span>';
+                resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">Conversion failed: ' + e.message + '</span>';
             }
         }
 
-        // 秒时间戳转日期时间
+        // S timestamp to DateTime
         function sToDatetime() {
             const input = document.getElementById('sInput').value.trim();
             const resultBox = document.getElementById('sResult');
 
             if (!input) {
-                resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">请输入时间戳</span>';
+                resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">Please enter timestamp</span>';
                 return;
             }
 
             const s = parseInt(input);
             if (isNaN(s)) {
-                resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">请输入有效的数字</span>';
+                resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">Please enter a valid number</span>';
                 return;
             }
 
-            // 如果输入的是13位数(毫秒)，自动转换为秒
+            // If input is 13 digits (milliseconds), convert to seconds
             const timestamp = s > 10000000000 ? s : s * 1000;
 
             try {
                 const date = new Date(timestamp);
                 if (isNaN(date.getTime())) {
-                    throw new Error('无效日期');
+                    throw new Error('Invalid date');
                 }
                 resultBox.dataset.result = formatDatetime(date);
                 resultBox.querySelector('.result-value').innerHTML = `<span class="result-success">${formatDatetime(date)}</span>`;
                 saveState();
             } catch (e) {
-                resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">转换失败：' + e.message + '</span>';
+                resultBox.querySelector('.result-value').innerHTML = '<span class="result-error">Conversion failed: ' + e.message + '</span>';
             }
         }
 
-        // 日期时间转时间戳
+        // DateTime to timestamp
         function datetimeToTimestamp() {
             const input = document.getElementById('datetimeInput').value.trim();
             const msResult = document.getElementById('datetimeMs');
             const sResult = document.getElementById('datetimeS');
 
             if (!input) {
-                msResult.innerHTML = '<span class="result-error">请输入日期时间</span>';
-                sResult.innerHTML = '<span class="result-error">请输入日期时间</span>';
+                msResult.innerHTML = '<span class="result-error">Please enter DateTime</span>';
+                sResult.innerHTML = '<span class="result-error">Please enter DateTime</span>';
                 return;
             }
 
             try {
-                // 尝试多种日期格式
+                // Try multiple date formats
                 let date;
 
-                // 处理 T 格式
+                // Handle T format
                 let normalizedInput = input.replace(/\//g, '-');
 
                 date = new Date(normalizedInput);
 
                 if (isNaN(date.getTime())) {
-                    // 尝试添加时间部分
+                    // Try adding time part
                     if (!normalizedInput.includes('T') && !normalizedInput.includes(':')) {
                         date = new Date(normalizedInput + ' 00:00:00');
                     }
                 }
 
                 if (isNaN(date.getTime())) {
-                    throw new Error('无法解析日期格式');
+                    throw new Error('Cannot parse date format');
                 }
 
                 const ms = date.getTime();
                 const s = Math.floor(ms / 1000);
 
-                msResult.innerHTML = `<span class="result-success">${ms}</span> <button class="copy-btn" onclick="copyText('${ms}')">复制</button>`;
-                sResult.innerHTML = `<span class="result-success">${s}</span> <button class="copy-btn" onclick="copyText('${s}')">复制</button>`;
+                msResult.innerHTML = `<span class="result-success">${ms}</span> <button class="copy-btn" onclick="copyText('${ms}')">Copy</button>`;
+                sResult.innerHTML = `<span class="result-success">${s}</span> <button class="copy-btn" onclick="copyText('${s}')">Copy</button>`;
                 saveState();
             } catch (e) {
-                msResult.innerHTML = '<span class="result-error">转换失败</span>';
-                sResult.innerHTML = '<span class="result-error">转换失败</span>';
+                msResult.innerHTML = '<span class="result-error">Conversion failed</span>';
+                sResult.innerHTML = '<span class="result-error">Conversion failed</span>';
             }
         }
 
-        // 快速填充函数
+        // Quick fill functions
         function fillCurrentMs() {
             document.getElementById('msInput').value = Date.now();
             msToDatetime();
@@ -582,16 +582,16 @@
             }
         }
 
-        // 复制文本
+        // Copy text
         function copyText(text) {
             navigator.clipboard.writeText(text).then(() => {
-                // 静默成功
+                // Silent success
             }).catch(err => {
-                console.error('复制失败:', err);
+                console.error('Copy failed:', err);
             });
         }
 
-        // 输入框回车事件
+        // Input box Enter event
         document.getElementById('msInput').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') msToDatetime();
         });

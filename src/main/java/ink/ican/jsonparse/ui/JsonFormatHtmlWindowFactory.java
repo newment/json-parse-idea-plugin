@@ -48,7 +48,7 @@ public class JsonFormatHtmlWindowFactory implements ToolWindowFactory {
     }
 
     /**
-     * 将 JAR 包内的资源文件提取到临时目录
+     * Extract resource files from JAR to temp directory
      */
     private File getOrExtractResources() {
         if (tempResourcesDir != null && tempResourcesDir.exists()) {
@@ -56,11 +56,11 @@ public class JsonFormatHtmlWindowFactory implements ToolWindowFactory {
         }
 
         try {
-            // 创建临时目录
+            // Create temp directory
             File tempDir = Files.createTempDirectory("json-parse-resources").toFile();
             tempDir.deleteOnExit();
 
-            // 需要提取的 HTML 文件列表
+            // List of HTML files to extract
             String[] resources = {"index.html","json-format.html", "text-compare.html", "json-escape.html", "sidebar-component.js", "timestamp.html", "base64.html", "url-encode.html"};
 
             for (String resourceName : resources) {

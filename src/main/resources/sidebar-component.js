@@ -1,13 +1,13 @@
 /**
- * 侧边栏菜单组件 - 抽象模块
- * 支持动态配置、主题切换、功能扩展
+ * Sidebar menu component - Abstract module
+ * Supports dynamic configuration, theme switching, feature extensions
  */
 
 class SidebarComponent {
     constructor(containerSelector, options = {}) {
         this.container = document.querySelector(containerSelector);
         this.options = {
-            header: options.header || '工具集',
+            header: options.header || 'Tools',
             theme: options.theme || 'default',
             onNavigate: options.onNavigate || this._defaultNavigate.bind(this),
             onReady: options.onReady || null,
@@ -279,11 +279,11 @@ class SidebarComponent {
         }
     }
     
-    // ============ 公共 API ============
+    // ============ Public API ============
     
     /**
-     * 设置菜单数据
-     * @param {Array} menus - 菜单配置数组
+     * Set menu data
+     * @param {Array} menus - Menu configuration array
      */
     setMenus(menus) {
         this.menus = menus;
@@ -291,17 +291,17 @@ class SidebarComponent {
     }
     
     /**
-     * 获取菜单数据
-     * @returns {Array} 当前菜单配置
+     * Get menu data
+     * @returns {Array} Current menu configuration
      */
     getMenus() {
         return [...this.menus];
     }
     
     /**
-     * 添加菜单项
-     * @param {Object} menu - 菜单配置对象
-     * @param {number} index - 插入位置（可选，默认末尾）
+     * Add menu item
+     * @param {Object} menu - Menu configuration object
+     * @param {number} index - Insert position (optional, default at end)
      */
     addMenu(menu, index = -1) {
         if (index < 0 || index >= this.menus.length) {
@@ -313,8 +313,8 @@ class SidebarComponent {
     }
     
     /**
-     * 移除菜单项
-     * @param {number|string} identifier - 索引或 page 标识
+     * Remove menu item
+     * @param {number|string} identifier - Index or page identifier
      */
     removeMenu(identifier) {
         if (typeof identifier === 'number') {
@@ -329,9 +329,9 @@ class SidebarComponent {
     }
     
     /**
-     * 更新菜单项
-     * @param {number|string} identifier - 索引或 page 标识
-     * @param {Object} updates - 更新的属性
+     * Update menu item
+     * @param {number|string} identifier - Index or page identifier
+     * @param {Object} updates - Properties to update
      */
     updateMenu(identifier, updates) {
         let menu;
@@ -349,8 +349,8 @@ class SidebarComponent {
     }
     
     /**
-     * 设置主题
-     * @param {string} themeName - 主题名称 (default|dark|light)
+     * Set theme
+     * @param {string} themeName - Theme name (default|dark|light)
      */
     setTheme(themeName) {
         if (this.themes[themeName]) {
@@ -361,25 +361,25 @@ class SidebarComponent {
     }
     
     /**
-     * 获取可用主题列表
-     * @returns {string[]} 主题名称数组
+     * Get available themes list
+     * @returns {string[]} Theme name array
      */
     getAvailableThemes() {
         return Object.keys(this.themes);
     }
     
     /**
-     * 添加自定义主题
-     * @param {string} name - 主题名称
-     * @param {Object} themeConfig - 主题配置
+     * Add custom theme
+     * @param {string} name - Theme name
+     * @param {Object} themeConfig - Theme configuration
      */
     addTheme(name, themeConfig) {
         this.themes[name] = themeConfig;
     }
     
     /**
-     * 设置活动菜单项
-     * @param {number|string} identifier - 索引或 page 标识
+     * Set active menu item
+     * @param {number|string} identifier - Index or page identifier
      */
     setActive(identifier) {
         this.menus.forEach(m => m.active = false);
@@ -400,15 +400,15 @@ class SidebarComponent {
     }
     
     /**
-     * 获取当前活动菜单项
-     * @returns {Object|null} 当前活动菜单
+     * Get current active menu item
+     * @returns {Object|null} Current active menu
      */
     getActive() {
         return this.activeItem || this.menus.find(m => m.active);
     }
     
     /**
-     * 销毁组件
+     * Destroy component
      */
     destroy() {
         this.container.innerHTML = '';
@@ -417,23 +417,23 @@ class SidebarComponent {
     }
 }
 
-// ============ 预定义菜单配置工厂 ============
+// ============ Predefined Menu Config Factory ============
 
 const MenuConfig = {
     /**
-     * 创建基础工具菜单
+     * Create basic tools menu
      */
     createToolsMenu() {
         return [
             {
                 page: 'index.html',
-                label: 'JSON格式化',
+                label: 'JSON Format',
                 icon: '📋',
                 active: false
             },
             {
                 page: 'text-compare.html',
-                label: '文字对比',
+                label: 'Text Compare',
                 icon: '⚖️',
                 active: false
             }
@@ -441,7 +441,7 @@ const MenuConfig = {
     },
     
     /**
-     * 创建带徽章的菜单项
+     * Create menu item with badge
      */
     createBadgeMenuItem(page, label, icon, badge, badgeColor) {
         return {
@@ -457,6 +457,6 @@ const MenuConfig = {
     }
 };
 
-// 导出到全局
+// Export to global
 window.SidebarComponent = SidebarComponent;
 window.MenuConfig = MenuConfig;

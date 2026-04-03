@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base64编解码</title>
+    <title>Base64 Encode/Decode</title>
     <link rel="icon" href="assets/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -360,22 +360,22 @@
         <div class="panel-wrapper">
             <div class="panel panel-left">
                 <div class="panel-title">
-                    输入
+                    Input
                     <span id="errorHint"
                           style="color: #EA5455; font-size: 12px; font-weight: normal; margin-left: 8px; display: none;"></span>
                     <span id="successHint"
                           style="color: #4caf50; font-size: 12px; font-weight: normal; margin-left: 8px; display: none;"></span>
                 </div>
-                <button class="btn-clear" onclick="clearInput()" title="清空">✕</button>
-                <button class="btn-copy" onclick="copyInput()" title="复制">📋</button>
+                <button class="btn-clear" onclick="clearInput()" title="Clear">✕</button>
+                <button class="btn-copy" onclick="copyInput()" title="Copy">📋</button>
                 <textarea
                         id="base64Input"
                         class="text-input"
-                        placeholder="请输入文本或Base64字符串..."
+                        placeholder="Please enter text or Base64 string..."
                 ></textarea>
                 <div class="file-input-wrapper">
                     <label for="fileInput">
-                        📁 选择文件（自动Base64编码）
+                        📁 Select file (auto Base64 encode)
                     </label>
                     <input type="file" id="fileInput" onchange="handleFileSelect(event)">
                     <div class="file-name" id="fileName"></div>
@@ -384,16 +384,16 @@
 
             <div class="panel">
                 <div class="panel-title">
-                    输出
+                    Output
                     <span id="infoBar"
                           style="visibility: hidden; margin-left: 8px; font-size: 12px; color: #666;"></span>
                 </div>
-                <button class="btn-copy" onclick="copyOutput()" title="复制结果">📋</button>
-                <button id="downloadBtn" class="btn-copy" onclick="downloadImage()" title="下载图片" style="right: 85px; display: none;">⬇️</button>
+                <button class="btn-copy" onclick="copyOutput()" title="Copy result">📋</button>
+                <button id="downloadBtn" class="btn-copy" onclick="downloadImage()" title="Download image" style="right: 85px; display: none;">⬇️</button>
                 <div id="outputContainer">
                     <div class="empty-state">
                         <div class="empty-state-icon">📦</div>
-                        <p>请在左侧输入内容<br>选择相应功能按钮进行处理</p>
+                        <p>Please enter content on the left<br>and select an action button to process</p>
                     </div>
                 </div>
             </div>
@@ -402,16 +402,16 @@
         <div style="padding: 12px; border-top: 1px solid #e0e0e0; flex-shrink: 0;">
             <div class="button-group">
                 <button class="btn btn-primary" onclick="encodeBase64()">
-                    <span>🔒</span> 编码为Base64
+                    <span>🔒</span> Encode to Base64
                 </button>
                 <button class="btn btn-secondary" onclick="decodeBase64()">
-                    <span>🔓</span> 解码Base64
+                    <span>🔓</span> Decode Base64
                 </button>
                 <button class="btn btn-success" onclick="copyOutput()">
-                    <span>📋</span> 复制结果
+                    <span>📋</span> Copy result
                 </button>
                 <button class="btn btn-danger" onclick="clearInput()">
-                    <span>🗑️</span> 清空
+                    <span>🗑️</span> Clear
                 </button>
             </div>
         </div>
@@ -496,7 +496,7 @@
             outputContainer.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">⚠️</div>
-                    <p>处理失败<br>${escapeHtml(message)}</p>
+                    <p>Processing failed<br>${escapeHtml(message)}</p>
                 </div>
             `;
 
@@ -540,17 +540,17 @@
             const input = document.getElementById('base64Input').value;
 
             if (!input.trim()) {
-                showError('请输入需要编码的内容');
+                showError('Please enter content to encode');
                 return;
             }
 
             try {
                 const encoded = btoa(unescape(encodeURIComponent(input)));
-                updateOutput(encoded, `原文 ${input.length} 字符 → Base64 ${encoded.length} 字符`);
-                showSuccess('✅ 编码成功！');
+                updateOutput(encoded, `Original ${input.length} chars → Base64 ${encoded.length} chars`);
+                showSuccess('✅ Encoded successfully!');
                 saveState();
             } catch (e) {
-                showError('编码失败：' + e.message);
+                showError('Encoding failed:' + e.message);
             }
         }
 
@@ -558,7 +558,7 @@
             const input = document.getElementById('base64Input').value.trim();
 
             if (!input) {
-                showError('请输入需要解码的Base64字符串');
+                showError('Please enter Base64 string to decode');
                 return;
             }
 
@@ -579,11 +579,11 @@
                     return;
                 }
 
-                updateOutput(decoded, `Base64 ${input.length} 字符 → 解码 ${decoded.length} 字符`);
-                showSuccess('✅ 解码成功！');
+                updateOutput(decoded, `Base64 ${input.length} chars → Decoded ${decoded.length} chars`);
+                showSuccess('✅ Decoded successfully!');
                 saveState();
             } catch (e) {
-                showError('解码失败：无效的Base64字符串');
+                showError('Decoding failed: invalid Base64 string');
             }
         }
 
@@ -639,8 +639,8 @@
             }
 
             // Not a recognized image format, show as text with warning
-            updateOutput(binaryData, `Base64 解码（二进制数据，无法识别为图片）`);
-            showSuccess('⚠️ 解码成功，但内容非文本且非已知图片格式');
+            updateOutput(binaryData, `Base64 decoded (binary data, cannot recognize as image)`);
+            showSuccess('⚠️ Decoded successfully, but content is not text and not a known image format');
         }
 
         let currentImageDataUrl = '';
@@ -659,8 +659,8 @@
 
             downloadBtn.style.display = 'block';
             infoBar.style.visibility = 'visible';
-            infoBar.innerHTML = `<span style="color: #666;">🖼️ 图片</span>`;
-            showSuccess('✅ 图片解码成功！');
+            infoBar.innerHTML = `<span style="color: #666;">🖼️ Image</span>`;
+            showSuccess('✅ Image decoded successfully!');
         }
 
         function downloadImage() {
@@ -682,18 +682,18 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            document.getElementById('fileName').textContent = `已选择: ${file.name} (${formatFileSize(file.size)})`;
+            document.getElementById('fileName').textContent = `Selected: ${file.name} (${formatFileSize(file.size)})`;
 
             const reader = new FileReader();
             reader.onload = function(e) {
                 const base64 = e.target.result;
                 document.getElementById('base64Input').value = base64;
-                updateOutput(base64, `文件 ${formatFileSize(file.size)}`);
-                showSuccess('✅ 文件已转为Base64！');
+                updateOutput(base64, `File ${formatFileSize(file.size)}`);
+                showSuccess('✅ File converted to Base64!');
                 saveState();
             };
             reader.onerror = function() {
-                showError('文件读取失败');
+                showError('File read failed');
             };
             reader.readAsDataURL(file);
         }
@@ -709,7 +709,7 @@
             document.getElementById('outputContainer').innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">📦</div>
-                    <p>请在左侧输入内容<br>选择相应功能按钮进行处理</p>
+                    <p>Please enter content on the left<br>and select an action button to process</p>
                 </div>
             `;
             document.getElementById('infoBar').style.visibility = 'hidden';
@@ -726,14 +726,14 @@
             const text = document.getElementById('base64Input').value;
 
             if (!text) {
-                showError('没有可复制的内容');
+                showError('Nothing to copy');
                 return;
             }
 
             navigator.clipboard.writeText(text).then(() => {
-                showSuccess('已复制到剪贴板');
+                showSuccess('Copied to clipboard');
             }).catch(err => {
-                showError('复制失败：' + err.message);
+                showError('Copy failed:' + err.message);
             });
         }
 
@@ -746,15 +746,15 @@
 
             const output = document.getElementById('outputContainer').textContent;
 
-            if (!output || output.includes('请在左侧输入') || output.includes('处理失败')) {
-                showError('没有可复制的结果');
+            if (!output || output.includes('Please enter content') || output.includes('Processing failed')) {
+                showError('No result to copy');
                 return;
             }
 
             navigator.clipboard.writeText(output).then(() => {
-                showSuccess('结果已复制到剪贴板');
+                showSuccess('Copied to clipboard');
             }).catch(err => {
-                showError('复制失败：' + err.message);
+                showError('Copy failed:' + err.message);
             });
         }
 
@@ -772,18 +772,18 @@
             try {
                 const item = new ClipboardItem({ [mimeType]: blob });
                 navigator.clipboard.write([item]).then(() => {
-                    showSuccess('图片已复制到剪贴板');
+                    showSuccess('Image copied to clipboard');
                 }).catch(err => {
                     // ClipboardItem not supported in JCEF, offer download instead
                     if (err.name === 'Error' || err.name === 'NotAllowedError') {
-                        showError('IDE环境下不支持复制图片，请使用下载按钮');
+                        showError('Copying images is not supported in IDE, please use the download button');
                     } else {
-                        showError('复制失败：' + err.message);
+                        showError('Copy failed:' + err.message);
                     }
                 });
             } catch (err) {
                 // ClipboardItem constructor may throw in JCEF
-                showError('IDE环境下不支持复制图片，请使用下载按钮');
+                showError('Copying images is not supported in IDE, please use the download button');
             }
         }
 
