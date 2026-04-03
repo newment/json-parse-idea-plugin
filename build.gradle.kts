@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "ink.ican"
-version = "1.1.3"
+version = "1.1.4"
 
 repositories {
     mavenCentral()
@@ -30,7 +30,7 @@ intellijPlatform {
             sinceBuild = "251"
         }
         changeNotes = """
-        Complete internationalization
+        Add shortcut support
     """.trimIndent()
     }
 }
