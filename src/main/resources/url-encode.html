@@ -414,14 +414,11 @@
         function saveState() {
             const state = {
                 input: document.getElementById('urlInput').value,
-                output: document.getElementById('outputContainer').innerHTML,
                 currentMode: currentMode,
                 errorHintVisible: document.getElementById('errorHint').style.display === 'inline',
                 errorHintText: document.getElementById('errorHint').textContent,
                 successHintVisible: document.getElementById('successHint').style.display === 'inline',
-                successHintText: document.getElementById('successHint').textContent,
-                infoBarVisible: document.getElementById('infoBar').style.visibility === 'visible',
-                infoBarContent: document.getElementById('infoBar').innerHTML
+                successHintText: document.getElementById('successHint').textContent
             };
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -434,36 +431,37 @@
                 if (!saved) return;
 
                 const state = JSON.parse(saved);
-                document.getElementById('urlInput').value = state.input || '';
 
-                if (state.output) {
-                    document.getElementById('outputContainer').innerHTML = state.output;
-                }
+                // Defer DOM updates to avoid blocking UI
+                requestAnimationFrame(() => {
+                    document.getElementById('urlInput').value = state.input || '';
 
-                if (state.currentMode) {
-                    currentMode = state.currentMode;
-                    document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
-                    document.getElementById('tab-' + currentMode).classList.add('active');
-                }
+                    if (state.currentMode) {
+                        currentMode = state.currentMode;
+                        document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
+                        document.getElementById('tab-' + currentMode).classList.add('active');
+                    }
 
-                if (state.errorHintVisible) {
-                    document.getElementById('errorHint').textContent = state.errorHintText;
-                    document.getElementById('errorHint').style.display = 'inline';
-                }
+                    if (state.errorHintVisible) {
+                        document.getElementById('errorHint').textContent = state.errorHintText;
+                        document.getElementById('errorHint').style.display = 'inline';
+                    }
 
-                if (state.successHintVisible) {
-                    document.getElementById('successHint').textContent = state.successHintText;
-                    document.getElementById('successHint').style.display = 'inline';
-                }
+                    if (state.successHintVisible) {
+                        document.getElementById('successHint').textContent = state.successHintText;
+                        document.getElementById('successHint').style.display = 'inline';
+                    }
 
-                if (state.infoBarVisible) {
-                    document.getElementById('infoBar').style.visibility = 'visible';
-                    document.getElementById('infoBar').innerHTML = state.infoBarContent;
-                }
+                    // Re-process if there's input
+                    if (state.input && state.input.trim()) {
+                        processURL();
+                    }
+                });
             } catch (e) {}
         }
 
-        restoreState();
+        // Delay restore to not block page load
+        requestAnimationFrame(restoreState);
 
         function setMode(mode) {
             currentMode = mode;

@@ -351,7 +351,6 @@
         function saveState() {
             const state = {
                 input: document.getElementById('jsonInput').value,
-                output: document.getElementById('outputContainer').innerHTML,
                 errorHintVisible: document.getElementById('errorHint').style.display === 'inline',
                 errorHintText: document.getElementById('errorHint').textContent,
                 successHintVisible: document.getElementById('successHint').style.display === 'inline',
@@ -368,25 +367,31 @@
                 if (!saved) return;
 
                 const state = JSON.parse(saved);
-                document.getElementById('jsonInput').value = state.input || '';
 
-                if (state.output) {
-                    document.getElementById('outputContainer').innerHTML = state.output;
-                }
+                // Defer DOM updates to avoid blocking UI
+                requestAnimationFrame(() => {
+                    document.getElementById('jsonInput').value = state.input || '';
 
-                if (state.errorHintVisible) {
-                    document.getElementById('errorHint').textContent = state.errorHintText;
-                    document.getElementById('errorHint').style.display = 'inline';
-                }
+                    if (state.errorHintVisible) {
+                        document.getElementById('errorHint').textContent = state.errorHintText;
+                        document.getElementById('errorHint').style.display = 'inline';
+                    }
 
-                if (state.successHintVisible) {
-                    document.getElementById('successHint').textContent = state.successHintText;
-                    document.getElementById('successHint').style.display = 'inline';
-                }
+                    if (state.successHintVisible) {
+                        document.getElementById('successHint').textContent = state.successHintText;
+                        document.getElementById('successHint').style.display = 'inline';
+                    }
+
+                    // Auto-parse if there's input
+                    if (state.input && state.input.trim()) {
+                        parseJSON();
+                    }
+                });
             } catch (e) {}
         }
 
-        restoreState();
+        // Delay restore to not block page load
+        requestAnimationFrame(restoreState);
 
         function getType(value) {
             if (value === null) return 'null';

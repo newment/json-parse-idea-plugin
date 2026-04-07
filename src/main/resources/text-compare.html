@@ -457,7 +457,6 @@
             const state = {
                 originalText: document.getElementById('originalText').value,
                 modifiedText: document.getElementById('modifiedText').value,
-                output: document.getElementById('outputContainer').innerHTML,
                 ignoreSpaces: document.getElementById('ignoreSpaces').checked,
                 ignoreCase: document.getElementById('ignoreCase').checked,
                 showLineNumbers: document.getElementById('showLineNumbers').checked,
@@ -474,20 +473,26 @@
                 if (!saved) return;
 
                 const state = JSON.parse(saved);
-                document.getElementById('originalText').value = state.originalText || '';
-                document.getElementById('modifiedText').value = state.modifiedText || '';
-                document.getElementById('ignoreSpaces').checked = state.ignoreSpaces || false;
-                document.getElementById('ignoreCase').checked = state.ignoreCase || false;
-                document.getElementById('showLineNumbers').checked = state.showLineNumbers || true;
-                document.getElementById('charByChar').checked = state.charByChar || false;
 
-                if (state.output) {
-                    document.getElementById('outputContainer').innerHTML = state.output;
-                }
+                // Defer DOM updates to avoid blocking UI
+                requestAnimationFrame(() => {
+                    document.getElementById('originalText').value = state.originalText || '';
+                    document.getElementById('modifiedText').value = state.modifiedText || '';
+                    document.getElementById('ignoreSpaces').checked = state.ignoreSpaces || false;
+                    document.getElementById('ignoreCase').checked = state.ignoreCase || false;
+                    document.getElementById('showLineNumbers').checked = state.showLineNumbers || true;
+                    document.getElementById('charByChar').checked = state.charByChar || false;
+
+                    // Re-run comparison if there's input
+                    if ((state.originalText && state.originalText.trim()) || (state.modifiedText && state.modifiedText.trim())) {
+                        compareTexts();
+                    }
+                });
             } catch (e) {}
         }
 
-        restoreState();
+        // Delay restore to not block page load
+        requestAnimationFrame(restoreState);
 
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';

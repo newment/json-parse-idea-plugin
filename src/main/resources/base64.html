@@ -418,21 +418,12 @@
     </div>
 
     <script>
+        let currentImageDataUrl = '';
         const STORAGE_KEY = 'base64_state';
 
         function saveState() {
             const state = {
-                input: document.getElementById('base64Input').value,
-                output: document.getElementById('outputContainer').innerHTML,
-                currentImageDataUrl: window.currentImageDataUrl || '',
-                infoBarVisible: document.getElementById('infoBar').style.visibility === 'visible',
-                infoBarContent: document.getElementById('infoBar').innerHTML,
-                errorHintVisible: document.getElementById('errorHint').style.display === 'inline',
-                errorHintText: document.getElementById('errorHint').textContent,
-                successHintVisible: document.getElementById('successHint').style.display === 'inline',
-                successHintText: document.getElementById('successHint').textContent,
-                fileName: document.getElementById('fileName').textContent,
-                downloadBtnVisible: document.getElementById('downloadBtn').style.display === 'block'
+                input: document.getElementById('base64Input').value
             };
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -450,29 +441,8 @@
 
                 document.getElementById('base64Input').value = state.input || '';
 
-                if (state.currentImageDataUrl) {
-                    window.currentImageDataUrl = state.currentImageDataUrl;
-                    document.getElementById('outputContainer').innerHTML = state.output || '';
-                    document.getElementById('downloadBtn').style.display = state.downloadBtnVisible ? 'block' : 'none';
-                } else if (state.output) {
-                    document.getElementById('outputContainer').innerHTML = state.output;
-                }
-
-                document.getElementById('fileName').textContent = state.fileName || '';
-
-                if (state.infoBarVisible) {
-                    document.getElementById('infoBar').style.visibility = 'visible';
-                    document.getElementById('infoBar').innerHTML = state.infoBarContent;
-                }
-
-                if (state.errorHintVisible) {
-                    document.getElementById('errorHint').textContent = state.errorHintText;
-                    document.getElementById('errorHint').style.display = 'inline';
-                }
-
-                if (state.successHintVisible) {
-                    document.getElementById('successHint').textContent = state.successHintText;
-                    document.getElementById('successHint').style.display = 'inline';
+                if (state.input) {
+                    processBase64Input();
                 }
             } catch (e) {
                 // Ignore restore errors
@@ -510,6 +480,37 @@
             errorHint.style.display = 'none';
             successHint.textContent = message;
             successHint.style.display = 'inline';
+        }
+
+        function processBase64Input() {
+            const input = document.getElementById('base64Input').value.trim();
+            if (!input) return;
+
+            // Handle data URLs (images) explicitly
+            if (input.startsWith('data:image/')) {
+                try {
+                    decodeBase64();
+                } catch (e) {
+                    showError('Failed to process data URL: ' + e.message);
+                }
+                return;
+            }
+
+            // Check if input is valid Base64 format before attempting decode
+            if (/^[A-Za-z0-9+/]+=*$/.test(input) && input.length % 4 === 0) {
+                // Validate that the string contains only valid Base64 characters
+                // by checking if atob succeeds without throwing
+                try {
+                    atob(input);
+                    decodeBase64();
+                    return;
+                } catch (e) {
+                    // Invalid Base64, fall through to encode
+                }
+            }
+
+            // Default: encode as base64
+            encodeBase64();
         }
 
         function updateOutput(result, info) {
@@ -565,7 +566,17 @@
             try {
                 // Check if it's a data URL (image etc.)
                 if (input.startsWith('data:image/')) {
-                    displayImage(input);
+                    try {
+                        displayImage(input);
+                    } catch (e) {
+                        showError('Failed to display image: ' + e.message);
+                    }
+                    return;
+                }
+
+                // Validate base64 format before decoding
+                if (!/^[A-Za-z0-9+/]+=*$/.test(input)) {
+                    showError('Invalid Base64 format: contains non-base64 characters');
                     return;
                 }
 
@@ -642,8 +653,6 @@
             updateOutput(binaryData, `Base64 decoded (binary data, cannot recognize as image)`);
             showSuccess('⚠️ Decoded successfully, but content is not text and not a known image format');
         }
-
-        let currentImageDataUrl = '';
 
         function displayImage(dataUrl) {
             currentImageDataUrl = dataUrl;

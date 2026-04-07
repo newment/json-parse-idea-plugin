@@ -361,12 +361,8 @@
         function saveState() {
             const state = {
                 msInput: document.getElementById('msInput').value,
-                msResult: document.getElementById('msResult').querySelector('.result-value').innerHTML,
                 sInput: document.getElementById('sInput').value,
-                sResult: document.getElementById('sResult').querySelector('.result-value').innerHTML,
-                datetimeInput: document.getElementById('datetimeInput').value,
-                datetimeMs: document.getElementById('datetimeMs').innerHTML,
-                datetimeS: document.getElementById('datetimeS').innerHTML
+                datetimeInput: document.getElementById('datetimeInput').value
             };
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -380,25 +376,28 @@
 
                 const state = JSON.parse(saved);
 
-                if (state.msInput !== undefined) {
-                    document.getElementById('msInput').value = state.msInput;
-                    document.getElementById('msResult').querySelector('.result-value').innerHTML = state.msResult || '-';
-                }
+                // Defer DOM updates to avoid blocking UI
+                requestAnimationFrame(() => {
+                    if (state.msInput !== undefined) {
+                        document.getElementById('msInput').value = state.msInput;
+                        if (state.msInput) msToDatetime();
+                    }
 
-                if (state.sInput !== undefined) {
-                    document.getElementById('sInput').value = state.sInput;
-                    document.getElementById('sResult').querySelector('.result-value').innerHTML = state.sResult || '-';
-                }
+                    if (state.sInput !== undefined) {
+                        document.getElementById('sInput').value = state.sInput;
+                        if (state.sInput) sToDatetime();
+                    }
 
-                if (state.datetimeInput !== undefined) {
-                    document.getElementById('datetimeInput').value = state.datetimeInput;
-                    document.getElementById('datetimeMs').innerHTML = state.datetimeMs || '-';
-                    document.getElementById('datetimeS').innerHTML = state.datetimeS || '-';
-                }
+                    if (state.datetimeInput !== undefined) {
+                        document.getElementById('datetimeInput').value = state.datetimeInput;
+                        if (state.datetimeInput) datetimeToTimestamp();
+                    }
+                });
             } catch (e) {}
         }
 
-        restoreState();
+        // Delay restore to not block page load
+        requestAnimationFrame(restoreState);
 
         // Format DateTime
         function formatDatetime(date) {
